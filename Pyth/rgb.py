@@ -1,5 +1,5 @@
 import csv
-from hsl import Hsl
+from hsl import Hsl, hueThresh, satThresh, lumThresh, hslColors
 
 mainColors = []
 allColors = []
@@ -83,13 +83,49 @@ class Rgb:
         lum = 100 - lum;
         return lum;
     
+    def calcGrayLumLevel(self,red,green,blue):
+        hsl = Hsl()
+        HSL = hsl.rgb2hsl(red,green,blue)
+        sat = round(HSL[1],2) * 100
+        lum = round(HSL[2],2) * 100
+        a=4.0
+        temp = a*(1.0-(sat/100.0))
+        grayLumLevel = (100.0-lum) * temp/(temp+1)
+
+        return round(grayLumLevel);
+    
     def calcColor(self,red,green,blue):
         hsl = Hsl()
         color = Color()
         pix = "OTHER"
-        hue,sat,lum = 0, 0.0, 0.0
         HSL = hsl.rgb2hsl(red, green, blue)
         HSL[1] = round(HSL[1],2)
         HSL[2] = round(HSL[2],2)
+        grayLevel = self.calcGrayLevel(red,green,blue)
+        colorLevel = self.calcColorLevel(red,green,blue)
+        grayLumLevel = self.calcGrayLumLevel(red, green, blue)
+        for i in range(0,len(hueThresh)):
+            try:
+                if(HSL[0]>=hueThresh[i][0] and HSL[0]<=hueThresh[i][1]):
+                    if(HSL[1]>=satThresh[i][0] and HSL[1]<satThresh[i][1]):
+                        if(HSL[2]>=lumThresh[i][0] and HSL[2]<lumThresh[i][1]):
+                            pix = hslColors[i]
+                            if(grayLevel==0):
+                                pix = hslColors[i] + str(int(colorLevel))
+                        
+                            else:
+                                if(pix=="Black" or pix=="White"):
+                                    pix += str(colorLevel)
+                                elif(pix=="Grey"):
+                                    pix += str(colorLevel)
+                                else:
+                                    pix = "Gray" + str(grayLumLevel) + hslColors[i] + str(colorLevel)
+            
+                            if(color.countColors(hslColors[i])>=2):
+                                pix = color.reassignLevels(pix,red,green,blue)
+                            return str(int(grayLevel)) + pix 
+            except IndexError:
+                print "rgb::calcColor2() out of range!\n"
+                print "hueThresh.Size: {}".format(len(hueThresh))
     
 from color import Color

@@ -1,9 +1,11 @@
 import numpy as np
 import csv
 
-hf_read = open("/home/jason/git/WebDerm/WebDerm/psoriasis1_row(91).csv")
+'''Data is imported by row'''
+
+hf_read = open("/home/jason/git/WebDerm/WebDerm/count.csv")
 csv_read = csv.reader(hf_read)
-hf_write = open("/home/jason/git/WebDerm/WebDerm/psoriasis1_polyfit.csv","w")
+hf_write = open("/home/jason/git/WebDerm/WebDerm/count_polyfit.csv","w")
 csv_write = csv.writer(hf_write)
 
 mat = []
@@ -13,7 +15,7 @@ for row in csv_read:
     Y = row
     
     Y = map(float,Y)
-    p = np.polyfit(X,Y,4)
+    p = np.polyfit(X,Y,5)
     pp = np.polyval(p,X)
     mat.append(pp)
     matOrig.append(row)

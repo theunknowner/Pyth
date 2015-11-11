@@ -7,28 +7,41 @@ from color import Color
 from rgb import Rgb
 import cv2
 import numpy as np
+from pixeldata import PixelData
+from imagedata import ImageData
+
+img = cv2.imread("/home/jason/Desktop/workspace/test1.png")
+
+#px = img[0,0]
+#print px
 
 rgb = Rgb()
 hsl = Hsl()
 color = Color()
 rgb.importThresholds()
 hsl.importHslThresholds()
+#print rgb.calcColor(255, 0, 0)
+id = ImageData(img,"test1",1)
+print id.name()
+print id.size()
+print id.prevSize()
 
-'''
 hsl = Hsl()
 xyz = Xyz()
 lab = CieLab()
 cie = Cie()
-RGB1 = hsl.hsl2rgb(24, 0.32, 0.71)
-RGB2 = hsl.hsl2rgb(24, 0.35, 0.69)
+RGB1 = hsl.hsl2rgb(9, 0.32, 0.71)
+RGB2 = hsl.hsl2rgb(14, 0.32, 0.70)
 XYZ1 = xyz.rgb2xyz(RGB1[0], RGB1[1], RGB1[2])
 XYZ2 = xyz.rgb2xyz(RGB2[0], RGB2[1], RGB2[2])
 LAB1 = lab.xyz2lab(XYZ1[0],XYZ1[1],XYZ1[2])
 LAB2 = lab.xyz2lab(XYZ2[0],XYZ2[1],XYZ2[2])
-print "RGB1:",RGB1
-print "RGB2:",RGB2
-print cie.deltaE76(LAB1, LAB2)
-'''
+#print "LAB1:",LAB1
+#print "LAB2:",LAB2
+pix = [0,0,255]
+pd = PixelData(pix)
+print pd.hslVec
+
 '''
 color = Color()
 color1 = "BrownPink"
