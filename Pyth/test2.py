@@ -1,10 +1,5 @@
-import tensorflow as tf
+dict = {"1":1, "2":2, "3":3}
 
-hello = tf.constant("Hello, World")
-sess = tf.Session()
-print sess.run(hello)
-
-a = tf.constant(2)
-b = tf.constant(3)
-c = tf.add(a, b)
-print sess.run(c)
+print dict
+dict["4"] = 4
+print dict

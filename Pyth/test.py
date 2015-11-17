@@ -9,22 +9,19 @@ import cv2
 import numpy as np
 from pixeldata import PixelData
 from imagedata import ImageData
+from functions import Functions
 
-img = cv2.imread("/home/jason/Desktop/workspace/test1.png")
-
+img = cv2.imread("/home/jason/Desktop/workspace/test2.png",0)
+print img.shape[0] * img.shape[1]
 #px = img[0,0]
 #print px
-
+'''
 rgb = Rgb()
 hsl = Hsl()
 color = Color()
 rgb.importThresholds()
 hsl.importHslThresholds()
 #print rgb.calcColor(255, 0, 0)
-id = ImageData(img,"test1",1)
-print id.name()
-print id.size()
-print id.prevSize()
 
 hsl = Hsl()
 xyz = Xyz()
@@ -41,7 +38,7 @@ LAB2 = lab.xyz2lab(XYZ2[0],XYZ2[1],XYZ2[2])
 pix = [0,0,255]
 pd = PixelData(pix)
 print pd.hslVec
-
+'''
 '''
 color = Color()
 color1 = "BrownPink"
