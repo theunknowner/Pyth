@@ -10,9 +10,14 @@ import numpy as np
 from pixeldata import PixelData
 from imagedata import ImageData
 from functions import Functions
+from Algorithms import jaysort as js
 
-img = cv2.imread("/home/jason/Desktop/workspace/test2.png",0)
-print img.shape[0] * img.shape[1]
+#img = cv2.imread("/home/jason/Desktop/workspace/test2.png",0)
+#print img.shape[0] * img.shape[1]
+arr = [5,1,3,8,2,9]
+total = np.sum(arr)
+print total
+
 #px = img[0,0]
 #print px
 '''
