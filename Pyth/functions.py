@@ -1,6 +1,26 @@
 import cv2
 
 class Functions:
+    #gets image filename from filepath
+    def getFileName(self, filename, end=""):
+        delimit1 = '/'
+        delimit2 = '.'
+        name = filename;
+        pos=0
+        pos2=0
+        if(filename.find(delimit2)>=0):
+            for i in range(0,len(filename)):
+                if(filename[i]==delimit1):
+                    pos=i+1
+                if(filename[i]==delimit2):
+                    pos2=i
+            name = filename[pos:pos2]
+            if(end!=""):
+                pos = name.find(end)
+                name = name[0:pos]
+    
+        return name
+    
     def cropImage(self,input):
         ptX = ptY = 0
         roiWidth = roiHeight = 0
@@ -30,3 +50,7 @@ class Functions:
         
         img2 = img1[0:roiHeight,0:roiWidth];
         return img2
+    
+if __name__ == "__main__":
+    func = Functions()
+    print func.getFileName("/home/jason/Desktop/Programs/Crop_Features/acne1.png")

@@ -22,9 +22,9 @@ class Rgb:
         folderName = "Thresholds/"
         filename = folderName+"main_colors.csv"
         filename2 = folderName+"colors.csv"
-        file1_read = open(filename)
+        file1_read = open(filename,"r")
         csv_file1 = csv.reader(file1_read)
-        file2_read = open(filename2)
+        file2_read = open(filename2,"r")
         csv_file2 = csv.reader(file2_read)
         for row in csv_file1:
             for i in range(len(row)):

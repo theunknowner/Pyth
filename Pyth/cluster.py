@@ -1,15 +1,9 @@
-'''
-Created on Oct 5, 2016
-
-@author: jason
-'''
-
 import numpy as np
 import math
 import random
 import cv2
 
-from Algorithms import jaysort
+from Algorithms.jaysort import jaysort
 
 class Cluster:
     dataRange = 0.0
@@ -247,3 +241,9 @@ class Cluster:
         for i in range(0,len(self.centers)):
             print("{} - {} - Min: {}, Max: {}".format(self.centers[i,0],self.centerCount[i],self.ranges[i][0],self.ranges[i][1]))
 
+if __name__ == "__main__":
+    clst = Cluster()
+    img = cv2.imread("/home/jason/Desktop/Programs/Crop_Features/acne1_discrete.png",0)
+    centers = clst.kmeansCluster(img, 4, 0, 255)
+    print centers
+    
