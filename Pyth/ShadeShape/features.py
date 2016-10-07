@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from islands import Islands
-from functions import Functions
+import functions as fn
 
 class Features:
     parentId = object #ImageData parentID
@@ -22,7 +22,6 @@ class Features:
         self.featureImg = featureImg
         self.featArea = cv2.countNonZero(featureImg)
         littleIslands = self.extractIslands(featureImg, thresh)
-        fn = Functions()
         for i in range(len(littleIslands)):
             island = Islands(littleIslands.at(i))
             crop_img = fn.cropImage(island.image());

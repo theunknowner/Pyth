@@ -2,7 +2,7 @@ import numpy as np
 import csv
 import os
 
-from functions import Functions
+import functions as func
 from color import Color
 from rgb import Rgb
 
@@ -62,7 +62,7 @@ class FileData:
     
     def setFilePath(self, file_path):
         self.file_path = file_path
-        self.filename = Functions.getFileName(file_path)
+        self.filename = func.getFileName(file_path)
     
     def getFileMatrix(self):
         # gets the imported data matrix by passing as reference
