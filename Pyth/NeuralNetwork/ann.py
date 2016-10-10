@@ -7,29 +7,27 @@ import traceback
 import functions as fn
 from filedata import FileData
 
-THRESH_IMPORTED = False
-PARAM_PATH = "../Thresholds/param-Excavated.xml"
-shapeNames = []
-shapeNamesMap = {}
-shapeNamesMap2 = {}
-img_size = [0,0]
-shapeNames2 = []
-cvAnnVec = []
-cvAnnVec2 = {}
-importParam = False
-
 class ANN:
     ''' 
     CALL TestML::clear() function at end of program
     to free dyanmic memory from ANN params
     '''
     
+    __THRESH_IMPORTED__ = False
+    __shapeNames__ = []
+    __shapeNamesMap__ = {}
+    __shapeNamesMap2__ = {}
+    __img_size__ = [0,0]
+    __shapeNames2__ = []
+    __cvAnnVec__ = []
+    __cvAnnVec2__ = {}
+    __importParam__ = False
+    __layers__ = []
+    
     def __init__(self, _import=True):
-        global THRESH_IMPORTED
-        global importParam
-        importParam = _import
-        if not THRESH_IMPORTED:
-            THRESH_IMPORTED = self.importThresholds()
+        self.__importParam__ = _import
+        if not self.__THRESH_IMPORTED__:
+            self.__THRESH_IMPORTED__ = self.importThresholds()
 
     def importThresholds(self):
         try:
@@ -38,46 +36,54 @@ class ANN:
             fs3 = open("../Thresholds/shape_params.csv","r")
             fs4 = open("../Thresholds/shape_names2.csv","r")
             fs5 = open("../Thresholds/shape_params2.csv","r")
+            fs6 = open("../Thresholds/ml_layers.csv","r")
         except Exception:
             print("ANN::importThreshold() failed, shape_names.csv does not exist!")
             return False
         
         fs_read = csv.reader(fs)
         for row in fs_read:
-            shapeNames.append(row[0])
-            shapeNamesMap[row[0]] = len(shapeNames)-1
+            self.__shapeNames__.append(row[0])
+            self.__shapeNamesMap__[row[0]] = len(self.__shapeNames__)-1
         fs.close()
         
         fs2_read = csv.reader(fs2)
         for row in fs2_read:
-            img_size[0] = int(row[0])
-            img_size[1] = int(row[1])
+            self.__img_size__[0] = int(row[0])
+            self.__img_size__[1] = int(row[1])
         fs2.close()
         
-        if(importParam):
+        if(self.__importParam__):
             fs3_read = csv.reader(fs3)
             for row in fs3_read:
+                param_path = "../"+row[0]
                 ann = cv2.ANN_MLP()
-                ann.load(row[0])
-                cvAnnVec.append(ann)
+                ann.load(param_path)
+                self.__cvAnnVec__.append(ann)
         fs3.close()
         
         fs4_read = csv.reader(fs4)
         for row in fs4_read:
-            shapeNames2.append(row[0])
-            shapeNamesMap2[row[0]] = len(shapeNames2)-1
+            self.__shapeNames2__.append(row[0])
+            self.__shapeNamesMap2__[row[0]] = len(self.__shapeNames2__)-1
         fs4.close()
         
-        if(importParam):
+        if(self.__importParam__):
             fs5_read = csv.reader(fs5)
             num = 0
             for row in fs5_read:
                 if(row[0].find(".xml")>=0):
+                    param_path = "../"+row[0]
                     ann = cv2.ANN_MLP()
-                    ann.load(row[0])
-                    cvAnnVec2[num] = ann
+                    ann.load(param_path)
+                    self.__cvAnnVec2__[num] = ann
                 num+=1
         fs5.close()
+        
+        fs6_read = csv.reader(fs6)
+        for row in fs6_read:
+            self.setLayerParams(row)
+            
         return True
 
     def getData(self):
@@ -88,7 +94,8 @@ class ANN:
         return self.labels
     
     def setLayerParams(self, layers):
-        self.layers = layers
+        for l in layers:
+            self.__layers__.append(int(l))
     
     def prepareImage(self, sample, size):
         '''
@@ -151,7 +158,7 @@ class ANN:
         '''
         rows = sampleVec[0].shape[0]
         cols = sampleVec[0].shape[1]
-        if((rows*cols)==self.layers[0,0]):
+        if((rows*cols)==self.__layers__[0]):
             sampleSet = np.zeros((len(sampleVec),rows*cols),np.float32)
             for i in range(0,len(sampleVec)):
                 for j in range(0,rows):
@@ -161,7 +168,7 @@ class ANN:
             return sampleSet
         else:
             print("ANN::prepareMatSamples() error!")
-            print("input size != rows*cols")
+            print("input size != rows*cols -> {} != {}".format(rows*cols,self.__layers__[0]))
             return None
     
     def importSamples(self, folder, size):
@@ -179,7 +186,8 @@ class ANN:
                 
         return samples
     
-    def importLabels(self, path, labels):
+    def importLabels(self, path):
+        labels = []
         fs = None
         try:
             fs = open(path,"r")
@@ -200,160 +208,109 @@ class ANN:
                         mLabels[0][j] = fVec[j]
                     labels.append(mLabels)
         fs.close()
-'''  
-    Mat TestML::runANN(String param, vector<Mat> sampleVec) {
-        CvANN_MLP ann;
-        ann.load(param.c_str());
-        Mat layers = ann.get_layer_sizes();
-        this->setLayerParams(layers);
-        Mat sample_set = this->prepareMatSamples(sampleVec);
-        Mat results;
-        ann.predict(sample_set,results);
-        /*for(int i=0; i<results.rows; i++) {
-            printf("Sample: %d, ",i+1);
-            cout << results.row(i) << endl;
-        }*/
-        return results;
-    }
+        return labels
     
-    //! reads csv file containing path to files/folders
-    //! used for importing training data to train ANN
-    void TestML::importTrainingData(String samplePath, String labelsPath, Size size) {
-        fstream fs(samplePath);
-        if(fs.is_open()) {
-            String folder;
-            vector<Mat> samples;
-            vector<Mat> labels;
-            while(getline(fs,folder)) {
-                this->importSamples(folder,samples,size);
-            }
-            this->importLabels(labelsPath,labels);
-            if(samples.size()==labels.size()) {
-                Mat mData(samples.size(),samples.at(0).total(),CV_32F,Scalar(0));
-                Mat mLabels(labels.size(),labels.at(0).cols,CV_32F,Scalar(0));
-                int x=0;
-                for(unsigned int i=0; i<samples.size(); i++) {
-                    Mat samp = samples.at(i);
-                    Mat lbl = labels.at(i);
-                    //samp = this->tempFixPrepareImg(samp);
-                    for(int j=0; j<samp.rows; j++) {
-                        for(int k=0; k<samp.cols; k++) {
-                            if(samp.type()==CV_8U)
-                                mData.at<float>(i,x) = samp.at<uchar>(j,k);
-                            else if(samp.type()==CV_32S)
-                                mData.at<float>(i,x) = samp.at<int>(j,k);
-                            if(samp.type()==CV_32F)
-                                mData.at<float>(i,x) = samp.at<float>(j,k);
-                            x++;
-                        }
-                    }
-                    x=0;
-                    for(int n=0; n<lbl.cols; n++) {
-                        mLabels.at<float>(i,n) = lbl.at<float>(0,n);
-                    }
-                }
-                this->data = mData;
-                this->labels = mLabels;
+    #! reads csv file containing path to files/folders
+    #! used for importing training data to train ANN
+    def importTrainingData(self, samplePath, labelsPath, size):
+        with open(samplePath,"r") as fs:
+            fs_read = csv.reader(fs)
+            for row in fs_read:
+                samples = self.importSamples(row[0], size)
+            
+            labels =  self.importLabels(labelsPath)
+            if(len(samples)==len(labels)):
+                mData = np.zeros((len(samples),samples[0].size),np.float32)
+                mLabels = np.zeros((len(labels),labels[0].size),np.float32)
+                x=0
+                for i in range(0,len(samples)):
+                    samp = samples[i]
+                    lbl = labels[i]
+                    for j in range(0,samp.shape[0]):
+                        for k in range(0,samp.shape[1]):
+                            mData[i,x] = samp[j,k]
+                            x+=1
+                    x=0
+                    for n in range(0,lbl.shape[1]):
+                        mLabels[i,n] = lbl[0,n]
+                self.data = mData
+                self.labels = mLabels
     
-            }
-            else {
-                printf("TestML::importTrainingData() error!\n");
-                printf("Sample size != Label size\n");
-                printf("Sample size: %lu\n",samples.size());
-                printf("Label size: %lu\n",labels.size());
-                fs.close();
-                exit(1);
-            }
-            fs.close();
-        }
-    }
+            else:
+                print("TestML::importTrainingData() error!")
+                print("Sample size != Label size\n")
+                print("Sample size: {}".format(len(samples)))
+                print("Label size: {}".format(len(labels)))
+                exit(1)
     
-    String TestML::getShapeName(int num) {
-        return TestML::shapeNames.at(num);
-    }
+    def getShapeName(self, num):
+        return self.__shapeNames__[num]
     
-    int TestML::numOfShapes() {
-        return TestML::shapeNames.size();
-    }
+    def numOfShapes(self):
+        return len(self.__shapeNames__)
     
-    Size TestML::getSize() {
-        return TestML::img_size;
-    }
+    def getSize(self):
+        return self.__img_size__
     
-    int TestML::getShapeIndex(String shape) {
-        if(TestML::shapeNamesMap.find(shape)!=TestML::shapeNamesMap.end()) {
-            return TestML::shapeNamesMap[shape];
-        }
-        return -1;
-    }
+    def getShapeIndex(self, shape):
+        if(self.__shapeNamesMap__.has_key(shape)):
+            return self.__shapeNamesMap__[shape]
+        return -1
     
-    int TestML::getShapeIndex2(String shape) {
-        if(TestML::shapeNamesMap2.find(shape)!=TestML::shapeNamesMap2.end()) {
-            return TestML::shapeNamesMap2[shape];
-        }
-        return -1;
-    }
+    def getShapeIndex2(self, shape):
+        if(self.__shapeNamesMap2__.has_key(shape)):
+            return self.__shapeNamesMap2__[shape]
+        return -1
     
-    //! NN3
-    Mat TestML::runANN2(vector<Mat> sampleVec) {
-        Mat results = Mat::zeros(1,TestML::cvAnnVec.size(),CV_32F);
-        Mat score;
-        for(unsigned int i=0; i<TestML::cvAnnVec.size(); i++) {
-            //String param = TestML::shapeParamPaths.at(i);
-            //ann.load(param.c_str());
-            //Mat layers = ann.get_layer_sizes();
-            Mat layers = TestML::cvAnnVec.at(i)->get_layer_sizes();
-            this->setLayerParams(layers);
-            Mat sample_set  = this->prepareMatSamples(sampleVec);
-            //ann.predict(sample_set,score);
-            TestML::cvAnnVec.at(i)->predict(sample_set,score);
-            results.at<float>(0,i) = score.at<float>(0,0);
-        }
-        return results;
-    }
+    #! NN3
+    def runANN2(self, sampleVec):
+        results = np.zeros((len(sampleVec),len(self.__cvAnnVec__)),np.float32)
+        for i in range(0,len(self.__cvAnnVec__)):
+            sample_set  = self.prepareMatSamples(sampleVec)
+            retVal, score = self.__cvAnnVec__[i].predict(sample_set)
+            for j in range(0, len(sampleVec)):
+                results[j,i] = score[j][0]
+
+        return results
     
-    //! NN3
-    String TestML::getShapeName2(int num) {
-        return TestML::shapeNames2.at(num);
-    }
+    #! NN3
+    def getShapeName2(self, num):
+        return self.__shapeNames2__[num]
     
-    //! NN3
-    //! returns first index containing shape
-    int TestML::getIndexContainingShape(String shape) {
-        for(unsigned int i=0; i<TestML::shapeNames.size(); i++) {
-            if(TestML::shapeNames.at(i).find(shape)!=string::npos) {
+    def getIndexContainingShape(self, shape):
+        '''
+        #! NN3
+        #! returns first index containing shape
+        '''
+        for i in range(0,len(self.__shapeNames__)):
+            if(self.__shapeNames__[i].find(shape)>=0):
                 return i;
-            }
-        }
         return -1;
-    }
     
-    //! NN3 Disc/Donut Comp/Incomp
-    //! 0=Disc; 1=Donut; 3=REI/Fused-Donuts
-    Mat TestML::runANN2b(vector<Mat> sampleVec, int nnShape) {
-        Mat results;
-        //for(unsigned int i=0; i<TestML::cvAnnVec2.size(); i++) {
-        Mat layers = TestML::cvAnnVec2.at(nnShape)->get_layer_sizes();
-        this->setLayerParams(layers);
-        Mat sample_set  = this->prepareMatSamples(sampleVec);
-        TestML::cvAnnVec2.at(nnShape)->predict(sample_set,results);
-        //}
-        return results;
-    }
+    def runANN2b(self, sampleVec, nnShape):
+        '''
+        #! NN3 Disc/Donut Comp/Incomp
+        #! 0=Disc; 1=Donut; 3=REI/Fused-Donuts
+        '''
+        sample_set  = self.prepareMatSamples(sampleVec)
+        retVal, results = self.__cvAnnVec2__[nnShape].predict(sample_set)
+        return results
     
-    //! free memory
-    /*** MUST BE CALLED AT END OF PROGRAM ***/
-    void TestML::clear() {
-        for(unsigned int i=0; i<TestML::cvAnnVec.size(); i++) {
-            delete TestML::cvAnnVec.at(i);
-            TestML::cvAnnVec.at(i) = NULL;
-        }
-    }
+    #! free memory
+    #*** MUST BE CALLED AT END OF PROGRAM ***
+    def clear(self):
+        del self.__cvAnnVec__[:]
     
-'''
             
 if __name__ == "__main__":
     ann = ANN()
-    img = cv2.imread("/home/jason/Desktop/Programs/Crop_Features/acne1_discrete.png",0)
+    img = cv2.imread("/home/jason/Desktop/workspace/pic1.png",0)
     img2 = ann.prepareImage(img, [40,40])
-    fn.imgshow(img2)
+    sampleVec = []
+    sampleVec.append(img2)
+    sampleVec.append(img2)
+    results = ann.runANN2b(sampleVec,1)
+    print results
+    
+    
+    

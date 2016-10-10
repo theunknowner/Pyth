@@ -10,14 +10,14 @@ g_Shades2 = []
 g_ShadeThresh2 = []
 
 class Shades(PeakCluster):
-    THRESH_IMPORTED = False
+    __THRESH_IMPORTED__ = False
     
     def __init__(self):
-        if not self.THRESH_IMPORTED:
-            self.THRESH_IMPORTED = self.importThresholds();
+        if not self.__THRESH_IMPORTED__:
+            self.__THRESH_IMPORTED__ = self.importThresholds();
     
     def importThresholds(self):
-        if not self.THRESH_IMPORTED:
+        if not self.__THRESH_IMPORTED__:
             folderName = "/home/jason/git/WebDerm/WebDerm/Thresholds/"
             filename = folderName+"shade-thresholds.csv"
             filename2 = folderName+"shade-thresholds2.csv"

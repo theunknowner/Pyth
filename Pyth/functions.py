@@ -83,9 +83,9 @@ def scaleDownImage(src, size):
     scaledDownImage = np.zeros((size[1],size[0]),np.uint8)
     for x in range(0,size[1]):
         for y in range(0,size[0]):
-            yd = math.ceil(float(y*src.shape[1])/size[0])
-            xd = math.ceil(float(x*src.shape[0])/size[1])
-            scaledDownImage[x,y] =src[xd,yd]
+            yd = int(math.ceil(float(y*src.shape[1])/size[0]))
+            xd = int(math.ceil(float(x*src.shape[0])/size[1]))
+            scaledDownImage[x,y] = src[xd,yd]
 
     return scaledDownImage;
     
