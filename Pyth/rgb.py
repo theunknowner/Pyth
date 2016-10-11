@@ -1,10 +1,18 @@
 import csv
+import pkg_resources
+
 from hsl import Hsl, hueThresh, satThresh, lumThresh, hslColors
 
 mainColors = []
 allColors = []
 
 class Rgb:
+    THRESH_IMPORTED = False
+    
+    def __init__(self):
+        if not self.THRESH_IMPORTED:
+            self.THRESH_IMPORTED = self.importThresholds()
+        
     def getMainColorIndex(self,color):
         for i in range(len(mainColors)):
             if(color==mainColors[i]):
@@ -13,27 +21,28 @@ class Rgb:
             
     def getColorIndex(self,color):
         for i in range(len(allColors)):
-            print i
             if(color==allColors[i]):
                 return i
         return -1;
 
     def importThresholds(self):
-        folderName = "Thresholds/"
-        filename = folderName+"main_colors.csv"
-        filename2 = folderName+"colors.csv"
-        file1_read = open(filename,"r")
-        csv_file1 = csv.reader(file1_read)
-        file2_read = open(filename2,"r")
-        csv_file2 = csv.reader(file2_read)
-        for row in csv_file1:
-            for i in range(len(row)):
-                mainColors.append(row[i])
-        file1_read.close()
-        for row in csv_file2:
-            for i in range(len(row)):
-                allColors.append(row[i])
-        file2_read.close()
+        if not self.THRESH_IMPORTED:
+            res_mgr = pkg_resources.ResourceManager()
+            folder = "Thresholds"
+            file1_read = open(res_mgr.resource_filename(folder, "main_colors.csv"),"r")
+            csv_file1 = csv.reader(file1_read)
+            file2_read = open(res_mgr.resource_filename(folder, "colors.csv"),"r")
+            csv_file2 = csv.reader(file2_read)
+            for row in csv_file1:
+                for i in range(len(row)):
+                    mainColors.append(row[i])
+            file1_read.close()
+            for row in csv_file2:
+                for i in range(len(row)):
+                    allColors.append(row[i])
+            file2_read.close()
+            return True
+        return True
         
     def checkBlack(self,red,green,blue):
         if(red==0 and green==0 and blue==0):

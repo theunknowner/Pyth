@@ -3,6 +3,7 @@ import cv2
 import csv
 import math
 import traceback
+import pkg_resources
 
 import functions as fn
 from filedata import FileData
@@ -31,14 +32,16 @@ class ANN:
 
     def importThresholds(self):
         try:
-            fs = open("../Thresholds/shape_names.csv","r")
-            fs2 = open("../Thresholds/ml_nn_size.csv", "r")
-            fs3 = open("../Thresholds/shape_params.csv","r")
-            fs4 = open("../Thresholds/shape_names2.csv","r")
-            fs5 = open("../Thresholds/shape_params2.csv","r")
-            fs6 = open("../Thresholds/ml_layers.csv","r")
+            res_mgr = pkg_resources.ResourceManager()
+            folder = "Thresholds"
+            fs = open(res_mgr.resource_filename(folder,"shape_names.csv"),"r")
+            fs2 = open(res_mgr.resource_filename(folder,"ml_nn_size.csv"), "r")
+            fs3 = open(res_mgr.resource_filename(folder,"shape_params.csv"),"r")
+            fs4 = open(res_mgr.resource_filename(folder,"shape_names2.csv"),"r")
+            fs5 = open(res_mgr.resource_filename(folder,"shape_params2.csv"),"r")
+            fs6 = open(res_mgr.resource_filename(folder,"ml_layers.csv"),"r")
         except Exception:
-            print("ANN::importThreshold() failed, shape_names.csv does not exist!")
+            traceback.print_exc()
             return False
         
         fs_read = csv.reader(fs)
