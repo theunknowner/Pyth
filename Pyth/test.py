@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 from pixeldata import PixelData
 from imagedata import ImageData
-from functions import Functions
+import functions
 from Algorithms import jaysort as js
 from State.state import State
 
@@ -44,3 +44,10 @@ color2 = "Brown"
 color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
+
+rgb = Rgb()
+print rgb.getColorLevel("Grey45")
+
+
+
+

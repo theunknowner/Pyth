@@ -12,7 +12,7 @@ def main():
 if __name__ == "__main__":
     ann = ANN()
     Rgb = rgb.Rgb()
-    print rgb.mainColors
+    print rgb.__mainColors__
     print ann.__shapeNames__
     
     #main()

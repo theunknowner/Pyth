@@ -32,9 +32,9 @@ class Color:
         return count
     
     def extractColorFromString(self,color,vecColor):
-        for i in range(0,len(mainColors)):
-            if(self.containsMainColor(color, mainColors[i])):
-                vecColor.append(mainColors[i])
+        for i in range(0,len(Rgb.__mainColors__)):
+            if(self.containsMainColor(color, Rgb.__mainColors__[i])):
+                vecColor.append(Rgb.__mainColors__[i])
                 
     def isSameColor(self,color1,color2):
         vec1 = []
@@ -62,8 +62,8 @@ class Color:
     #returns the amount of different colors in the string    
     def countColors(self,color):
         count=0
-        for i in range(0,len(mainColors)):
-            if(color.find(mainColors[i])>-1):
+        for i in range(0,len(Rgb.__mainColors__)):
+            if(color.find(Rgb.__mainColors__[i])>-1):
                 count+=1
                 
         return count
@@ -75,4 +75,4 @@ class Color:
         self.extractColorFromString(pix, colorVec)
         colorLevel = rgb.calcGrayLevel(r, g, b)
         
-from rgb import Rgb, mainColors
+from rgb import Rgb

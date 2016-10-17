@@ -3,30 +3,29 @@ import pkg_resources
 
 from hsl import Hsl, hueThresh, satThresh, lumThresh, hslColors
 
-mainColors = []
-allColors = []
-
 class Rgb:
-    THRESH_IMPORTED = False
+    __THRESH_IMPORTED__ = False
+    __mainColors__ = [] # static variable
+    __allColors__ = []  # static variable
     
     def __init__(self):
-        if not self.THRESH_IMPORTED:
-            self.THRESH_IMPORTED = self.importThresholds()
+        if not Rgb.__THRESH_IMPORTED__:
+            Rgb.__THRESH_IMPORTED__ = self.importThresholds()
         
     def getMainColorIndex(self,color):
-        for i in range(len(mainColors)):
-            if(color==mainColors[i]):
+        for i in range(len(Rgb.__mainColors__)):
+            if(color==Rgb.__mainColors__[i]):
                 return i
         return -1;
             
     def getColorIndex(self,color):
-        for i in range(len(allColors)):
-            if(color==allColors[i]):
+        for i in range(len(Rgb.__allColors__)):
+            if(color==Rgb.__allColors__[i]):
                 return i
         return -1;
 
     def importThresholds(self):
-        if not self.THRESH_IMPORTED:
+        if not self.__THRESH_IMPORTED__:
             res_mgr = pkg_resources.ResourceManager()
             folder = "Thresholds"
             file1_read = open(res_mgr.resource_filename(folder, "main_colors.csv"),"r")
@@ -35,11 +34,11 @@ class Rgb:
             csv_file2 = csv.reader(file2_read)
             for row in csv_file1:
                 for i in range(len(row)):
-                    mainColors.append(row[i])
+                    Rgb.__mainColors__.append(row[i])
             file1_read.close()
             for row in csv_file2:
                 for i in range(len(row)):
-                    allColors.append(row[i])
+                    Rgb.__allColors__.append(row[i])
             file2_read.close()
             return True
         return True
@@ -59,25 +58,25 @@ class Rgb:
     def getGrayLevel1(self, color):
         mainColor="Gray";
         pos = color.find(mainColor);
-        if(pos!=-1):
+        if(pos>=0):
             level = int(color[0:pos]);
         else:
             pos = color.find("Grey")
-            if(pos!=-1):
+            if(pos>=0):
                 level = int(color[0:pos])
             else:
                 pos = color.find("Black");
-                if(pos!=-1):
+                if(pos>=0):
                     level = int(color[0:pos])
                     
         return level
                 
     def getColorLevel(self,pix):
-        for i in range(len(mainColors)):
-            if (mainColors[i]!="Grey"):
-                pos = pix.find(mainColors[i])
-                if (pos!=-1):
-                    level = int(pix[pos+len(mainColors[i]):len(pix)-pos+len(mainColors[i])])
+        for i in range(len(Rgb.__mainColors__)):
+            if (Rgb.__mainColors__[i]!="Gray"):
+                pos = pix.find(Rgb.__mainColors__[i])
+                if (pos>=0):
+                    level = int(pix[pos+len(Rgb.__mainColors__[i]):len(pix)])
                     
         return level
     
@@ -138,3 +137,7 @@ class Rgb:
                 print "hueThresh.Size: {}".format(len(hueThresh))
     
 from color import Color
+
+if __name__ == "__main__":
+    rgb = Rgb()
+    print rgb.getColorLevel("54Grey46Blue54Red45")
