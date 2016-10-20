@@ -88,8 +88,48 @@ def scaleDownImage(src, size):
             scaledDownImage[x,y] = src[xd,yd]
 
     return scaledDownImage;
+
+def countGreaterEqual(value, *inputs):
+    #//! returns number of variables greater than or equal to value
+    arr = np.array(inputs)
+    return np.sum(arr >= value)
+
+def countGreater(value, *inputs):
+    #//! returns number of variables greater than value
+    arr = np.array(inputs)
+    return np.sum(arr > value)
+
+def countLesser(value, *inputs):
+    #//! returns number of variables lesser than value
+    arr = np.array(inputs)
+    return np.sum(arr < value)
     
+def countLesserEqual(value, *inputs):
+    #//! returns number of variables lesser or equal to value
+    arr = np.array(inputs)
+    return np.sum(arr <= value)
+
+def countEqual(value, *inputs):
+    #//! returns number of variables equal to value
+    arr = np.array(inputs)
+    return np.sum(arr == value)
+
+def getMin(vec):
+    try:
+        val = min(vec)
+        min_index = vec.index(val)
+        return val, min_index
+    except Exception:
+        return None, -1
     
+def getMax(vec):
+    try:
+        val = max(vec)
+        max_index = vec.index(val)
+        return val, max_index
+    except Exception:
+        return None, -1
+
 if __name__ == "__main__":
     #print func.getFileName("/home/jason/Desktop/Programs/Crop_Features/acne1.png")
     img = cv2.imread("/home/jason/Desktop/Programs/Crop_Features/acne1_discrete.png",0)

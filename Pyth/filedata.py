@@ -24,7 +24,7 @@ class FileData:
     totalShades = None
     range = None
     ksize = ()
-    pt = None # current pt location of the filedata matrices
+    pt = [] # current pt location of the filedata matrices
     localRatioScanSize = None
     localScanSize = None
     windowVec = []

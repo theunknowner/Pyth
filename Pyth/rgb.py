@@ -1,7 +1,7 @@
 import csv
 import pkg_resources
 
-from hsl import Hsl, hueThresh, satThresh, lumThresh, hslColors
+from hsl import Hsl
 
 class Rgb:
     __THRESH_IMPORTED__ = False
@@ -112,14 +112,14 @@ class Rgb:
         grayLevel = self.calcGrayLevel(red,green,blue)
         colorLevel = self.calcColorLevel(red,green,blue)
         grayLumLevel = self.calcGrayLumLevel(red, green, blue)
-        for i in range(0,len(hueThresh)):
+        for i in range(0,len(Hsl.__hueThresh__)):
             try:
-                if(HSL[0]>=hueThresh[i][0] and HSL[0]<=hueThresh[i][1]):
-                    if(HSL[1]>=satThresh[i][0] and HSL[1]<satThresh[i][1]):
-                        if(HSL[2]>=lumThresh[i][0] and HSL[2]<lumThresh[i][1]):
-                            pix = hslColors[i]
+                if(HSL[0]>=Hsl.__hueThresh__[i][0] and HSL[0]<=Hsl.__hueThresh__[i][1]):
+                    if(HSL[1]>=Hsl.__satThresh__[i][0] and HSL[1]<Hsl.__satThresh__[i][1]):
+                        if(HSL[2]>=Hsl.__lumThresh__[i][0] and HSL[2]<Hsl.__lumThresh__[i][1]):
+                            pix = Hsl.__hslColors__[i]
                             if(grayLevel==0):
-                                pix = hslColors[i] + str(int(colorLevel))
+                                pix = Hsl.__hslColors__[i] + str(int(colorLevel))
                         
                             else:
                                 if(pix=="Black" or pix=="White"):
@@ -127,14 +127,14 @@ class Rgb:
                                 elif(pix=="Grey"):
                                     pix += str(colorLevel)
                                 else:
-                                    pix = "Gray" + str(grayLumLevel) + hslColors[i] + str(colorLevel)
+                                    pix = "Gray" + str(grayLumLevel) + Hsl.__hslColors__[i] + str(colorLevel)
             
-                            if(color.countColors(hslColors[i])>=2):
+                            if(color.countColors(Hsl.__hslColors__[i])>=2):
                                 pix = color.reassignLevels(pix,red,green,blue)
                             return str(int(grayLevel)) + pix 
             except IndexError:
                 print "rgb::calcColor2() out of range!\n"
-                print "hueThresh.Size: {}".format(len(hueThresh))
+                print "__hueThresh__.Size: {}".format(len(Hsl.__hueThresh__))
     
 from color import Color
 

@@ -1,4 +1,6 @@
 
+from Shades.shades import Shades
+
 class Color:
     def containsColor(self,*colors):
         argNum = len(colors)
@@ -55,9 +57,18 @@ class Color:
                     
         return False
     
-    #requires shade class to implement
     def extractShade(self,pix):
-        print pix
+        sh = Shades()
+        shadeCount = sh.getShadeCount()
+        shade = ""
+        if(pix=="Zero"): return pix
+        #if(pix.find("Gray")!=string::npos) return "Gray";
+        for i in range(0,shadeCount):
+            shade = sh.getShade(i)
+            if(pix.find(shade)>=0):
+                break
+            
+        return shade;
     
     #returns the amount of different colors in the string    
     def countColors(self,color):

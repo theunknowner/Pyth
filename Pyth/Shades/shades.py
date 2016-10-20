@@ -2,19 +2,18 @@ import csv
 
 from peakcluster import PeakCluster
 
-g_Shades = [] #global shades vec
-g_ShadeThresh = [] #global shade thresh vec
-
-#! g_Shades2 is for combined shades
-g_Shades2 = []
-g_ShadeThresh2 = []
-
 class Shades(PeakCluster):
     __THRESH_IMPORTED__ = False
+    __g_Shades__ = [] #global shades vec
+    __g_ShadeThresh__ = [] #global shade thresh vec
+    
+    #! __g_Shades2__ is for combined shades
+    __g_Shades2__ = []
+    __g_ShadeThresh2__ = []
     
     def __init__(self):
-        if not self.__THRESH_IMPORTED__:
-            self.__THRESH_IMPORTED__ = self.importThresholds();
+        if not Shades.__THRESH_IMPORTED__:
+            Shades.__THRESH_IMPORTED__ = self.importThresholds();
     
     def importThresholds(self):
         if not self.__THRESH_IMPORTED__:
@@ -35,18 +34,18 @@ class Shades(PeakCluster):
                 next(thresh_read)
                 for row in thresh_read:
                     thresh = []
-                    g_Shades.append(row[0])
+                    Shades.__g_Shades__.append(row[0])
                     thresh.append(float(row[1]))
                     thresh.append(float(row[2]))
-                    g_ShadeThresh.append(thresh)
+                    Shades.__g_ShadeThresh__.append(thresh)
                     
                 next(thresh2_read)
                 for row in thresh2_read:
                     thresh = []
-                    g_Shades2.append(row[0])
+                    Shades.__g_Shades2__.append(row[0])
                     thresh.append(float(row[1]))
                     thresh.append(float(row[2]))
-                    g_ShadeThresh2.append(thresh)
+                    Shades.__g_ShadeThresh2__.append(thresh)
                     
                 fsThresh.close()
                 fsThresh2.close()
@@ -55,7 +54,7 @@ class Shades(PeakCluster):
         return True
     
     def getShadeCount(self):
-        return len(g_Shades)
+        return len(Shades.__g_Shades__)
     
     def extractShadeLevel(self, shade):
         '''
@@ -69,7 +68,7 @@ class Shades(PeakCluster):
         ind=index
         if(ind<0): ind=0
         if(ind>(shadeCount-1)): ind=(shadeCount-1)
-        return g_Shades[ind]
+        return Shades.__g_Shades__[ind]
     
     def getShadeIndex(self, shade):
         index=0
@@ -94,23 +93,23 @@ class Shades(PeakCluster):
         return shade
     
     def calcShade(self, intensity):
-        for i in range(0,len(g_ShadeThresh)):
-            if(intensity<g_ShadeThresh[i][1] and intensity>=g_ShadeThresh[i][0]):
-                return g_Shades[i]
+        for i in range(0,len(Shades.__g_ShadeThresh__)):
+            if(intensity<Shades.__g_ShadeThresh__[i][1] and intensity>=Shades.__g_ShadeThresh__[i][0]):
+                return Shades.__g_Shades__[i]
             
         return "NONE"
     
     def calcShade2(self, intensity):
-        for i in range(0,len(g_ShadeThresh2)):
-            if(intensity<g_ShadeThresh2[i][1] and intensity>=g_ShadeThresh2[i][0]):
-                return g_Shades2[i]
+        for i in range(0,len(Shades.__g_ShadeThresh2__)):
+            if(intensity<Shades.__g_ShadeThresh2__[i][1] and intensity>=Shades.__g_ShadeThresh2__[i][0]):
+                return Shades.__g_Shades2__[i]
         return "NONE"
     
     def release_memory(self):
-        g_Shades[:] = []
-        g_ShadeThresh[:] = []
-        g_Shades2[:] = []
-        g_ShadeThresh2[:] = []
+        Shades.__g_Shades__[:] = []
+        Shades.__g_ShadeThresh__[:] = []
+        Shades.__g_Shades2__[:] = []
+        Shades.__g_ShadeThresh2__[:] = []
     
     def shadeDifference(self, shade1, shade2):
         '''
@@ -124,10 +123,10 @@ class Shades(PeakCluster):
     
     def getShadeIndex2(self, shade):
         '''
-        return index for g_Shades2
+        return index for __g_Shades2__
         '''
         index=0
-        shadeCount = len(g_Shades2)
+        shadeCount = len(Shades.__g_Shades2__)
         for i in range(0,shadeCount):
             if(shade==self.getShade2(i)):
                 index=i
@@ -135,11 +134,11 @@ class Shades(PeakCluster):
         return index
     
     def getShade2(self, index):
-        shadeCount = len(g_Shades2)
+        shadeCount = len(Shades.__g_Shades2__)
         ind=index
         if(ind<0): ind=0
         if(ind>(shadeCount-1)): ind=(shadeCount-1)
-        return g_Shades2[ind]
+        return Shades.__g_Shades2__[ind]
     
     #custom function for combing shades that might look the same
     def combineShades(self, shade):
@@ -154,7 +153,7 @@ class Shades(PeakCluster):
 if __name__ == "__main__":
     sh = Shades()
     sh.importThresholds()
-    print g_Shades
-    print g_Shades2
-    print g_ShadeThresh
-    print g_ShadeThresh2
+    print Shades.__g_Shades__
+    print Shades.__g_Shades2__
+    print Shades.__g_ShadeThresh__
+    print Shades.__g_ShadeThresh2__

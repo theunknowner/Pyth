@@ -2,14 +2,13 @@ from epoh import epoh
 from xyz import Xyz
 from cielab import CieLab
 from cie import Cie
-from hsl import Hsl, hueThresh, satThresh, lumThresh
+from hsl import Hsl
 from color import Color
 from rgb import Rgb
 import cv2
 import numpy as np
 from pixeldata import PixelData
 from imagedata import ImageData
-import functions
 from Algorithms import jaysort as js
 from State.state import State
 
@@ -45,9 +44,8 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-rgb = Rgb()
-print rgb.getColorLevel("Grey45")
-
-
-
-
+def foo(value, *inputs):
+    j = np.array(inputs)
+    print np.sum(j == value)
+    
+foo("3","3","3","4")
