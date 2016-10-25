@@ -596,70 +596,59 @@ def rule3(fd, newPix, newShade):
 
     return 0
 
-//rule#4 - contrast rule 2 for Grey that looks Violet/Purple
-double rule4(FileData &fd, String &newPix, String newShade) {
-    double ruleNum=4;
-    double flag=false;
-    Color c;
-    Rgb rgb;
-    Functions fn;
-    Point pt = fd.pt;
-    String pix="";
-    double grayLevel = rgb.getGrayLevel1(newPix);
-    double colorLevel = rgb.getColorLevel(newPix);
-    int localScanSize = 20;
-    String color = c.getMainColor(newPix);
-    String prevColor_0, prevColor_45, prevColor_90;
-    int colorCount0=0, colorCount45=0, colorCount90=0;
-    int flag0=0, flag45=0, flag90=0;
-    int HSL[3] = {0};
-    HSL[0] = fn.getDelimitedValuesFromString(fd.hslMat.at(pt.y).at(pt.x),';',1);
-    HSL[1] = fn.getDelimitedValuesFromString(fd.hslMat.at(pt.y).at(pt.x),';',2)*100;
-    HSL[2] = fn.getDelimitedValuesFromString(fd.hslMat.at(pt.y).at(pt.x),';',3)*100;
-    if((color.find("Grey")!=string::npos || newShade.find("Dark")!=string::npos) && HSL[1]<=25 && pt.y>0) {
-        int j=pt.x-1;
-        int x = j;
-        int endY = (pt.y-localScanSize);
-        for(int i=(pt.y-1); i>=endY; i--) {
-            if(x<0 && j<0 && i<0) break;
-            if(x>=0) {
-                prevColor_0 = c.getMainColor(fd.colorVec.at(pt.y).at(x));
-                if(prevColor_0.find("Violet")!=string::npos) {
-                    ++colorCount0;
-                }
-            }
-            --x;
-            if(j>=0 && i>=0) {
-                prevColor_45 = c.getMainColor(fd.colorVec.at(i).at(j));
-                if(prevColor_45.find("Violet")!=string::npos) {
-                    ++colorCount45;
-                }
-            }
-            --j;
-            if(i>=0) {
-                prevColor_90 = c.getMainColor(fd.colorVec.at(i).at(pt.x));
-                if(prevColor_90.find("Violet")!=string::npos) {
-                    ++colorCount90;
-                }
+#rule#4 - contrast rule 2 for Grey that looks Violet/Purple
+def rule4(fd, newPix, newShade):
+    ruleNum=4
+    flag = False
+    c = Color()
+    rgb = Rgb()
+    pt = fd.pt
+    pix=""
+    grayLevel = rgb.getGrayLevel1(newPix)
+    colorLevel = rgb.getColorLevel(newPix)
+    localScanSize = 20
+    color = c.getMainColor(newPix)
+    prevColor_0 = prevColor_45 = prevColor_90 = ""
+    colorCount0 = colorCount45 = colorCount90 = 0
+    flag0 = flag45 = flag90=0
+    HSL = [0] * 3
+    hslStr = fd.hslMat[pt[1]][pt[0]].split(";")
+    HSL[0] = hslStr[0]
+    HSL[1] = hslStr[1]*100;
+    HSL[2] = hslStr[2]*100;
+    if((color.find("Grey")>=0 or newShade.find("Dark")>=0) and HSL[1]<=25 and pt[1]>0):
+        j=pt[0]-1
+        x = j
+        endY = (pt[1]-localScanSize)
+        for i in range(pt[1]-1, endY-1, -1):
+            if(x<0 and j<0 and i<0): break
+            if(x>=0):
+                prevColor_0 = c.getMainColor(fd.colorVec[pt[1]][x])
+                if(prevColor_0.find("Violet")>=0):
+                    colorCount0+=1
+            x-=1
+            if(j>=0 and i>=0):
+                prevColor_45 = c.getMainColor(fd.colorVec[i][j])
+                if(prevColor_45.find("Violet")>=0):
+                    colorCount45+=1
+            j-=1
+            if(i>=0):
+                prevColor_90 = c.getMainColor(fd.colorVec[i][pt[0]]);
+                if(prevColor_90.find("Violet")>=0):
+                    colorCount90+=1
 
-            }
-        }
+        if(colorCount0>=10): flag0=1
+        if(colorCount45>=10): flag45=1
+        if(colorCount90>=10): flag90=1
 
-        if(colorCount0>=10) flag0=1;
-        if(colorCount45>=10) flag45=1;
-        if(colorCount90>=10) flag90=1;
+        if(fn.countGreaterEqual(1,flag0,flag45,flag90)>=2):
+            pix = "Purple"
+            flag=True
+    if(pix!=""):
+        newPix = str(grayLevel)+"Gray"+pix+str(colorLevel)
+    if(flag==True): return ruleNum, newPix;
 
-        if(fn.countGreaterEqual(4,flag0,flag45,flag90,1)>=2) {
-            pix = "Purple";
-            flag=true;
-        }
-    }
-    if(pix!="")
-        newPix = str(grayLevel)+"Gray"+pix+str(colorLevel);
-    if(flag==true) return ruleNum;
-
-    return 0;
-}
+    return 0, newPix;
 
 //rule #5 - Pink -> DarkPink
 double rule5(FileData &fd, String &newPix, String &newShade) {
