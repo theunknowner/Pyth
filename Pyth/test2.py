@@ -8,10 +8,5 @@ cv2.imshow('image',img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()'''
 
-import requests
-from bs4 import BeautifulSoup as bs
-
-sess = requests.Session()
-resp = sess.get("https://www.yelp.com/biz/pita-grill-new-york-5")
-soup = bs(resp.content,"lxml")
-print soup.prettify()
+def foo():
+    print "Hello World"

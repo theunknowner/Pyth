@@ -67,10 +67,14 @@ class Islands:
     def nn_image(self):
         return self.nn_prepared_img
     
-    def shape(self):
+    def shape(self, set_shape=""):
+        if(set_shape!=""):
+            self.islShape = set_shape
         return self.islShape
     
-    def shape_name(self):
+    def shape_name(self, set_shape_name=""):
+        if(set_shape_name!=""):
+            self.islShapeName = set_shape_name
         return self.islShapeName
     
     def nn_results(self):

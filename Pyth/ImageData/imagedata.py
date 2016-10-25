@@ -1,4 +1,4 @@
-from pixeldata import PixelData
+from ImageData.pixeldata import PixelData
 import numpy as np
 import csv
 
@@ -13,10 +13,10 @@ class ImageData:
     imgCols = 0
     matImage = []
     imgName = ""
-    def __init__(self,img,name,option):
+    def __init__(self,img,name="",option=0):
         self.extract(img, name, option)
         
-    def extract(self,img,name,option):
+    def extract(self,img,name="",option=0):
         self.imgName = name
         self.matImage = np.copy(img)
         self.imgSize = [img.shape[0],img.shape[1]]

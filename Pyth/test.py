@@ -7,10 +7,11 @@ from color import Color
 from rgb import Rgb
 import cv2
 import numpy as np
-from pixeldata import PixelData
-from imagedata import ImageData
+from ImageData.pixeldata import PixelData
+from ImageData.imagedata import ImageData
 from Algorithms import jaysort as js
 from State.state import State
+import functions as fn
 
 '''#px = img[0,0]
 #print px
@@ -44,8 +45,8 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-def foo(value, *inputs):
-    j = np.array(inputs)
-    print np.sum(j == value)
-    
-foo("3","3","3","4")
+import numpy as np
+
+vec = np.array([1,2,3])
+vec2 = np.array([1,1,1])
+print vec.max()

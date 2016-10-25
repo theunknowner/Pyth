@@ -129,6 +129,13 @@ def getMax(vec):
         return val, max_index
     except Exception:
         return None, -1
+    
+def countPositive(input):
+    count = 0
+    for i in range(0, len(input)):
+        if(input[i]>0):
+            count+=1
+    return count
 
 if __name__ == "__main__":
     #print func.getFileName("/home/jason/Desktop/Programs/Crop_Features/acne1.png")

@@ -1,7 +1,9 @@
 import numpy as np
 import cv2
+
 from islands import Islands
 import functions as fn
+#from Shapes.shapes import Shapes
 
 class Features:
     parentId = object #ImageData parentID
@@ -16,36 +18,46 @@ class Features:
     NN_Results = []
     NN_Score = 0.0
     
-    def __init__(self,featureImg,parentId):
+    def __init__(self,featureImg,parentId,disconnectIslands=True):
         self.parentId = parentId
-        thresh = 0
         self.featureImg = featureImg
         self.featArea = cv2.countNonZero(featureImg)
+        thresh = 0.001
         littleIslands = self.extractIslands(featureImg, thresh)
         for i in range(len(littleIslands)):
             island = Islands(littleIslands.at(i))
             crop_img = fn.cropImage(island.image());
-            frameArea = (crop_img.shape[0]*crop_img.shape[1]) / (island.image().shape[0]*island.image().shape[1]);
-        if(frameArea>0.01 and (island.shape_name().find("Excavated")>=0 or island.shape_name().find("Default")>=0)):
-            containsRegularShape = False
-            islandVec2 = []
-            littleIslands2 = self.disconnectIslands(island.image())
-            for j in range(len(littleIslands2)):
-                island2 = Islands(littleIslands2.at(j))
-                islandVec2.append(island2)
-                if(island2.shape_name().find("Disc")>=0 or island2.shape_name().find("Donut")>=0):
-                    area = island2.area() / island.area();
-                    if(area>0.02):
-                        containsRegularShape = True;
-                        
-            if(containsRegularShape):
-                self.appendIslands(islandVec2);
-            else:
-                self.storeIsland(island);
+            frameArea = crop_img.size
             
-        else:
+            if(frameArea<=50):
+                #shapes = Shapes()
+                #island.shape_name("Unknown")
+                #island.shape(shapes.getShapeIndex(island.shape_name()))
+                pass # TODO
+            if(disconnectIslands):
+                crop_img = fn.cropImage(island.image())
+                frameArea = float(crop_img.size) / island.image().size
+                newIslandImg = np.copy(island.image())
+                if(frameArea>0.01 and (island.shape_name().find("Excavated")>=0 or island.shape_name().find("Default")>=0)):
+                    islandVec2 = []
+                    littleIslands2 = self.disconnectIslands(island.image())
+                    for j in range(len(littleIslands2)):
+                        island2 = Islands(littleIslands2.at(j))
+                        if(island2.shape_name().find("Fused-Donuts")>=0 and island2.shape_name().find("Comp-Donut")>=0):
+                            crop_img2 = fn.cropImage(island2.image())
+                            relArea = float(island2.area())/island.area()
+                            frameArea = float(crop_img2.size) / crop_img.size
+                            bigFrameArea = float(crop_img2.size) / island.image().size
+                            count = fn.countPositive(island2.nn_results())
+                            if(relArea>0.01 and frameArea>0.01 and bigFrameArea>0.01 and count==1):
+                                islandVec2.append(island2);
+                                newIslandImg = newIslandImg - island2.image();
+                                
+                    if(len(islandVec2)>0):
+                        self.appendIslands(islandVec2)
+                        island = Islands(newIslandImg)
+                        
             self.storeIsland(island);
-    
         self.numOfIsls = len(self.islandVec);
         self.determineFeatureShape(featureImg);
         self.getShadesOfIslands();
@@ -103,7 +115,7 @@ class Features:
         
     def getShadesOfIslands(self):
         maxVal = self.featureImg.max()
-        shadeVec = np.zeros(maxVal+1)
+        shadeVec = [0] * (maxVal+1)
         for i in range(self.numOfIsls):
             try:
                 shadeVec[self.islandVec[i].shade()]+=1
