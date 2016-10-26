@@ -45,8 +45,10 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-import numpy as np
+vec = np.zeros((3,3,3),np.uint8)
 
-vec = np.array([1,2,3])
-vec2 = np.array([1,1,1])
-print vec.max()
+a = b = c = 0
+a = a + 1
+print a
+print b
+
