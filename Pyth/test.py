@@ -45,10 +45,6 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-vec = np.zeros((3,3,3),np.uint8)
-
-a = b = c = 0
-a = a + 1
-print a
-print b
-
+result = np.zeros((20,20), np.uint8)
+cv2.line(result,(0,0),(19,19),(255),1)
+fn.imgshow(result)
