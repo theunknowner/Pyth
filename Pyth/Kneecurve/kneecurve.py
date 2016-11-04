@@ -3,7 +3,7 @@ import math
 
 
 #//! finds the knee of the curve
-#//! pass by reference so the original gets sorted
+#//! returns knee point and sorted vector
 def kneeCurvePoint(vec):
     vec = np.sort(vec)
 
@@ -59,7 +59,7 @@ def kneeCurvePoint(vec):
         if(dist>maxDist):
             maxDist = dist;
             bestIdx = i;
-    return bestIdx
+    return bestIdx, vec
 
 def removeOutliers(vec, percent):
     new_vec = np.sort(vec)

@@ -18,6 +18,7 @@ import traceback
 
 import kneecurve as kc
 from Algorithms import jaysort
+from hsl import Hsl
 
 class ShapeMorph:
     debugMode = False
@@ -245,7 +246,7 @@ class ShapeMorph:
         if(sum<2.5):
             del yVec[:len(yVec)/2]
     
-        bestIdx = kc.kneeCurvePoint(yVec)
+        bestIdx, yVec = kc.kneeCurvePoint(yVec)
         bestIdx *= shift
         thresh = yVec[bestIdx]
         #cout << bestIdx << endl;
@@ -272,7 +273,7 @@ class ShapeMorph:
                 if(lum>5):
                     yVec1.append(lum)
         yVec1 = kc.removeOutliers(yVec1,0.025)
-        bestIdx = kc.kneeCurvePoint(yVec1)
+        bestIdx, yVec1 = kc.kneeCurvePoint(yVec1)
         thresh = yVec1[bestIdx]
         _img2 = np.copy(img2)
         for i in range(0,img2.shape[0]):
@@ -323,7 +324,7 @@ class ShapeMorph:
                 if(lum>5):
                     yVec2.append(lum)
         yVec2 = kc.removeOutliers(yVec2,0.025)
-        bestIdx = kc.kneeCurvePoint(yVec2)
+        bestIdx, yVec2 = kc.kneeCurvePoint(yVec2)
         bestIdx *= shift
         thresh = yVec2[bestIdx]
         result = np.copy(img3)
@@ -547,15 +548,16 @@ class ShapeMorph:
                 if(src[row,col]>0 and src_map[row,col]==0):
                     ptVec = []
                     temp = []
-                    ptVec.append([col,row])
+                    ptVec.append([row,col])
                     src_map[row,col] = 255
-                    temp.append([col,row])
+                    temp.append([row,col])
                     while(len(temp)>0):
-                        up = (temp[0][0],temp[0][1]-1)
-                        left = (temp[0][0]-1,temp[0][1])
-                        right = (temp[0][0]+1,temp[0][1])
-                        down = (temp[0][0],temp[0][1]+1)
-                        downLeft = (temp[0][0]-1,temp[0][1]+1)
+                        # in python Points are tuples in form of (y,x)
+                        up = (temp[0][0]-1,temp[0][1])
+                        left = (temp[0][0],temp[0][1]-1)
+                        right = (temp[0][0],temp[0][1]+1)
+                        down = (temp[0][0]+1,temp[0][1])
+                        downLeft = (temp[0][0]+1,temp[0][1]-1)
                         downRight = (temp[0][0]+1,temp[0][1]+1)
                         if(up[1]>=0):
                             if(src_map[up]==0 and src[up]>lcThresh):
@@ -563,12 +565,12 @@ class ShapeMorph:
                                 src_map[up]=255
                                 temp.append(up)
                         if(left[0]>=0):
-                            if(map[left]==0 and src[left]>lcThresh):
+                            if(src_map[left]==0 and src[left]>lcThresh):
                                 ptVec.append(left)
                                 src_map[left]=255
                                 temp.append(left)
                         if(right[0]<src.shape[1]):
-                            if(map[right]==0 and src[right]>lcThresh):
+                            if(src_map[right]==0 and src[right]>lcThresh):
                                 ptVec.append(right)
                                 src_map[right]=255
                                 temp.append(right)
@@ -679,7 +681,7 @@ class ShapeMorph:
         fxThresh=0.0
         if(len(fnVec)>0):
             try:
-                bestIdx = kc.kneeCurvePoint(fnVec)
+                bestIdx, fnVec = kc.kneeCurvePoint(fnVec)
                 percent = round(float(bestIdx)/len(fnVec),2)
                 if(percent<=0.05000001):
                     bestIdx = 0.25 * len(fnVec)
@@ -726,220 +728,175 @@ class ShapeMorph:
     #//! for edges & corners of different sizes
     def countEdgeTouching(self, src, sideEdgeSize, cornerEdgeSize):
         _src = np.copy(src)
-        topEdge = _src[cornerEdgeSize:cornerEdgeSize+src.shape[1]-cornerEdgeSize*2, 0:sideEdgeSize]
-        bottomEdge = _src[cornerEdgeSize:cornerEdgeSize+src.shape[1]-cornerEdgeSize*2, src.rows-sideEdgeSize]
-        Mat bottomEdge = _src(Rect(cornerEdgeSize,src.rows-sideEdgeSize,src.cols-cornerEdgeSize*2,sideEdgeSize));
-        Mat leftEdge = _src(Rect(0,cornerEdgeSize,sideEdgeSize,src.rows-cornerEdgeSize*2));
-        Mat rightEdge = _src(Rect(src.cols-sideEdgeSize,cornerEdgeSize,sideEdgeSize,src.rows-cornerEdgeSize*2));
-        Mat topLeftEdge = _src(Rect(0,0,cornerEdgeSize,cornerEdgeSize));
-        Mat topRightEdge = _src(Rect(src.cols-cornerEdgeSize,0,cornerEdgeSize,cornerEdgeSize));
-        Mat bottomLeftEdge = _src(Rect(0,src.rows-cornerEdgeSize,cornerEdgeSize,cornerEdgeSize));
-        Mat bottomRightEdge = _src(Rect(src.cols-cornerEdgeSize,src.rows-cornerEdgeSize,cornerEdgeSize,cornerEdgeSize));
-        //int totalPix = countNonZero(src);
-        int topEdgePix = countNonZero(topEdge);
-        int leftEdgePix = countNonZero(leftEdge);
-        int bottomEdgePix = countNonZero(bottomEdge);
-        int rightEdgePix = countNonZero(rightEdge);
-        int topLeftEdgePix = countNonZero(topLeftEdge);
-        int topRightEdgePix = countNonZero(topRightEdge);
-        int bottomLeftEdgePix = countNonZero(bottomLeftEdge);
-        int bottomRightEdgePix = countNonZero(bottomRightEdge);
-        int totalEdgePix = topEdgePix+leftEdgePix+bottomEdgePix+rightEdgePix+
-                topLeftEdgePix+topRightEdgePix+bottomLeftEdgePix+bottomRightEdgePix;
+        topEdge = _src[0:sideEdgeSize, cornerEdgeSize:src.shape[1]-cornerEdgeSize]
+        bottomEdge = _src[src.shape[0]-sideEdgeSize:src.shape[0], cornerEdgeSize:src.shape[1]-cornerEdgeSize]
+        leftEdge = _src[cornerEdgeSize:src.rows-cornerEdgeSize, 0:sideEdgeSize]
+        rightEdge = _src[cornerEdgeSize:src.rows-cornerEdgeSize, src.shape[1]-sideEdgeSize:src.shape[1]]
+        topLeftEdge = _src[0:cornerEdgeSize, 0:cornerEdgeSize]
+        topRightEdge = _src[0:cornerEdgeSize, src.shape[1]-cornerEdgeSize:src.shape[1]]
+        bottomLeftEdge = _src[src.shape[0]-cornerEdgeSize:src.shape[0], 0:cornerEdgeSize]
+        bottomRightEdge = _src[src.shape[0]-cornerEdgeSize:src.shape[0], src.shape[1]-cornerEdgeSize:src.shape[1]]
+        #int totalPix = countNonZero(src);
+        topEdgePix = cv2.countNonZero(topEdge)
+        leftEdgePix = cv2.countNonZero(leftEdge);
+        bottomEdgePix = cv2.countNonZero(bottomEdge);
+        rightEdgePix = cv2.countNonZero(rightEdge);
+        topLeftEdgePix = cv2.countNonZero(topLeftEdge);
+        topRightEdgePix = cv2.countNonZero(topRightEdge);
+        bottomLeftEdgePix = cv2.countNonZero(bottomLeftEdge);
+        bottomRightEdgePix = cv2.countNonZero(bottomRightEdge);
+        totalEdgePix = topEdgePix+leftEdgePix+bottomEdgePix+rightEdgePix+topLeftEdgePix+topRightEdgePix+bottomLeftEdgePix+bottomRightEdgePix
         return totalEdgePix;
-    }
     
-    //returns map where noise is masked out
-    Mat ShapeMorph::removeNoiseOnBoundary(Mat src) {
-        Poly poly;
-        KneeCurve kc;
-        vector<double> vec;
-        Mat darkestStuff(src.rows,src.cols,CV_8U,Scalar(255));
-        for(int i=0; i<src.rows; i++) {
-            for(int j=0; j<src.cols; j++) {
-                double lum = src.at<uchar>(i,j);
-                vec.push_back(lum);
-            }
-        }
-        vector<double> xVec;
-        sort(vec.begin(),vec.end());
-        for(unsigned int i=0; i<vec.size(); i++) {
-            xVec.push_back((double)i);
-        }
-        vector<double> p = poly.polyfit(xVec,vec,1);
-        vector<double> y1 = poly.polyval(p,xVec);
-        //MSE
-        double sum=0;
-        for(unsigned int i=0; i<y1.size(); i++) {
-            double val = (vec.at(i)-y1.at(i))/vec.at(i);
-            val = pow(val,2);
-            sum += val;
-        }
-        sum = sqrt(sum);
-        if(sum<2.5)
-            vec.erase(vec.begin(),vec.begin()+(vec.size()/2));
-        int index = kc.kneeCurvePoint(vec);
-        double thresh = vec.at(index);
-        for(int i=0; i<src.rows; i++) {
-            for(int j=0; j<src.cols; j++) {
-                double lum = src.at<uchar>(i,j);
-                if(lum<thresh)
-                    darkestStuff.at<uchar>(i,j) = 0;
-            }
-        }
-        vector<Mat> islandsVec = this->liquidFeatureExtraction(darkestStuff,5.0);
-        Mat mapEdgeRemoval(src.rows, src.cols, CV_8U, Scalar(255));
-        for(unsigned int i=0; i<islandsVec.size(); i++) {
-            Mat edges(darkestStuff.size(),CV_8U,Scalar(0));
-            vector<vector<Point> > contour = this->findBoundary(islandsVec.at(i).clone());
-            drawContours(edges,contour,-1,Scalar(255));
-            int count = this->countEdgeTouching(edges,6,12);
-            int total = countNonZero(edges);
-            double percent = (double)count/total;
-            int featurePixCount = countNonZero(islandsVec.at(i));
-            double percentOfImage = (double)featurePixCount/darkestStuff.total();
-            if(percent>=0.47 and percentOfImage<0.15) {
-                for(int j=0; j<islandsVec.at(i).rows; j++) {
-                    for(int k=0; k<islandsVec.at(i).cols; k++) {
-                        int val = islandsVec.at(i).at<uchar>(j,k);
-                        if(val==255)
-                            mapEdgeRemoval.at<uchar>(j,k) = 0;
-                    }
-                }
-            }
-        }
+    # returns map where noise is masked out
+    def removeNoiseOnBoundary(self, src):
+        vec = [];
+        darkestStuff = np.full(src.shape, 255, np.uint8)
+        for i in range(0, src.shape[0]):
+            for j in range(0, src.shape[1]):
+                lum = src[i,j]
+                vec.append(lum)
+        xVec = []
+        vec = np.sort(vec)
+        for i in range(0, len(vec)):
+            xVec.append(i)
+        coeffs = np.polyfit(xVec,vec,1)
+        y1 = np.polyval(coeffs,xVec)
+        #MSE
+        sum=0
+        for i in range(0, len(y1)):
+            val = (vec[i]-y1[i])/vec[i]
+            val = pow(val,2)
+            sum += val
+        sum = math.sqrt(sum)
+        if(sum<2.5):
+            del vec[0:len(vec)/2]
+        index, vec = kc.kneeCurvePoint(vec)
+        thresh = vec[index]
+        for i in range(0, src.shape[0]):
+            for j in range(0, src.shape[1]):
+                lum = src[i,j]
+                if(lum<thresh):
+                    darkestStuff[i,j] = 0
+        islandsVec = self.liquidFeatureExtraction(darkestStuff,5.0)
+        mapEdgeRemoval = np.full(src.shape, 255, np.uint8)
+        for i in range(0, len(islandsVec)):
+            edges = np.zeros(darkestStuff.shape, np.uint8)
+            contour = self.findBoundary(np.copy(islandsVec[i]))
+            cv2.drawContours(edges,contour,-1,(255))
+            count = self.countEdgeTouching(edges,6,12)
+            total = self.countNonZero(edges)
+            percent = float(count)/total
+            featurePixCount = cv2.countNonZero(islandsVec[i])
+            percentOfImage = float(featurePixCount)/darkestStuff.size
+            if(percent>=0.47 and percentOfImage<0.15):
+                for j in range(0, islandsVec[i].shape[0]):
+                    for k in range(0, islandsVec[i].shape[1]):
+                        val = islandsVec[i][j,k]
+                        if(val==255):
+                            mapEdgeRemoval[j,k] = 0
     
-        return mapEdgeRemoval;
-    }
+        return mapEdgeRemoval
     
-    //! returns map of image after noise removal
-    //! input is a 5x5 smoothed image using Func::smooth()
-    Mat ShapeMorph::removeNoiseOnBoundary2(Mat src) {
-        Hsl hsl;
-        vector<double> HSL;
-        vector<double> vec;
-        vector<double> lumVec;
-        Size size(5,5);
-        for(int i=0; i<=(src.rows-size.height); i+=size.height) {
-            for(int j=0; j<=(src.cols-size.width); j+=size.width) {
-                Vec3b RGB = src.at<Vec3b>(i,j);
-                vector<double> HSL = hsl.rgb2hsl(RGB[2],RGB[1],RGB[0]);
-                HSL.at(1) = round(HSL.at(1) * 100);
-                HSL.at(2) = round(HSL.at(2) * 100);
-                float val = (100.0 - HSL.at(1)) - HSL.at(2);
-                vec.push_back(val);
-                lumVec.push_back(HSL.at(2));
-            }
-        }
-        KneeCurve kc;
-        int idx = kc.kneeCurvePoint(vec);
-        double thresh = vec.at(idx);
-        int lumThreshIdx = kc.kneeCurvePoint(lumVec);
-        int lumThresh = lumVec.at(lumThreshIdx) * 0.90;
+    #//! returns map of image after noise removal
+    #//! input is a 5x5 smoothed image using Func::smooth()
+    def removeNoiseOnBoundary2(self, src):
+        hsl = Hsl()
+        HSL = []
+        vec = []
+        lumVec = []
+        size = (5,5)
+        for i in range(0, src.shape[0]-size[1]+1, size[1]):
+            for j in range(0, src.shape[1]-size[0]+1, size[0]):
+                RGB = src[i,j]
+                HSL = hsl.rgb2hsl(RGB[2],RGB[1],RGB[0])
+                HSL[1] = round(HSL[1] * 100)
+                HSL[2] = round(HSL[2] * 100)
+                val = (100.0 - HSL[1]) - HSL[2]
+                vec.append(val)
+                lumVec.append(HSL[2])
+        idx, vec = kc.kneeCurvePoint(vec)
+        thresh = vec[idx]
+        lumThreshIdx, lumVec = kc.kneeCurvePoint(lumVec)
+        lumThresh = lumVec[lumThreshIdx] * 0.90
     
-        Mat map(src.size(),CV_8U,Scalar(255));
-        Mat mask = Mat::zeros(size,CV_8U);
-        for(int i=0; i<=(src.rows-size.height); i+=size.height) {
-            for(int j=0; j<=(src.cols-size.width); j+=size.width) {
-                int flag = 0;
-                Vec3b RGB = src.at<Vec3b>(i,j);
-                vector<double> HSL = hsl.rgb2hsl(RGB[2],RGB[1],RGB[0]);
-                HSL.at(1) = round(HSL.at(1) * 100);
-                HSL.at(2) = round(HSL.at(2) * 100);
-                float val = (100.0 - HSL.at(1)) - HSL.at(2);
-                for(int y=(i-size.height); y<=(i+size.height); y+=size.height) {
-                    for(int x=(j-size.width); x<=(j+size.width); x+=size.width) {
-                        if(y!=i and x!=j) {
-                            if(x<0 || y<0 || x>=src.cols || y>=src.rows) {
-                                flag = 1;
-                            } else if(map.at<uchar>(y,x)==0) {
-                                flag = 1;
-                            }
-                        }
-                    }
-                }
-                if(val>thresh and HSL.at(2)<lumThresh and flag==1) {
-                    mask.copyTo(map(Rect(j,i,mask.cols,mask.rows)));
-                }
-            }
-        }
-        return map;
-    }
+        src_map = np.full(src.shape, 255, np.uint8)
+        mask = np.zeros((size[1],size[0]), np.uint8)
+        for i in range(0, src.shape[0]-size[1]+1, size[1]):
+            for j in range(0, src.shape[1]-size[0]+1, size[0]):
+                flag = 0
+                RGB = src[i,j]
+                HSL = hsl.rgb2hsl(RGB[2],RGB[1],RGB[0])
+                HSL[1] = round(HSL[1] * 100)
+                HSL[2] = round(HSL[2] * 100);
+                val = (100.0 - HSL[1]) - HSL[2]
+                for y in range(i-size[1], i+size[1]+1, size[1]):
+                    for x in range(j-size[0], j+size[0]+1, size[0]):
+                        if(y!=i and x!=j):
+                            if(x<0 or y<0 or x>=src.shape[1] or y>=src.shape[0]):
+                                flag = 1
+                            elif(src_map[y,x]==0):
+                                flag = 1
+                if(val>thresh and HSL[2]<lumThresh and flag==1):
+                    src_map[i:i+mask.shape[0], j:j+mask.shape[1]] = mask
+        return src_map
     
-    Mat ShapeMorph::densityDisconnector(Mat src, double q, double coeff) {
-        if(src.empty()) {
-            printf("ShapeMorph::densityDisconnector() src is empty\n");
-            printf("src.size: %dx%d\n",src.rows,src.cols);
-            exit(1);
-        }
-        Mat map(src.rows,src.cols,CV_8U,Scalar(0));
-        Size size(5,5);
-        const double C=1.0;
-        const double alpha=1.0;
-        const double beta=0.0;
-        int row=0, col=0;
-        deque<double> fnVec;
-        double density=0, countDk=0, avgDk=0;
-        double absDiscernThresh=5.0;
-        while(row<src.rows) {
-            while(col<src.cols) {
-                for(int i=row; i<(row+size.height); i++) {
-                    for(int j=col; j<(col+size.width); j++) {
-                        if(j>=0 and i>=0 and j<src.cols and i<src.rows) {
-                            int lc = src.at<uchar>(i,j);
-                            if(lc>absDiscernThresh) {
-                                density++;
-                                avgDk += lc;
-                                countDk++;
-                            }
-                        }
-                    }
-                }
-                density /= size.area();
-                avgDk /= countDk;
-                if(countDk==0) avgDk = 0;
-                double fx = C * pow(density,alpha) * pow(avgDk,beta);
-                if(fx>0)
-                    fnVec.push_back(fx);
-                avgDk=0;
-                density=0;
-                countDk=0;
-                //col+=size.width;
-                col++;
-            }
-            col=0;
-            //row+=size.height;
-            row++;
-        }
+    def densityDisconnector(self, src, q, coeff=1.0):
+        if not src.size:
+            print("ShapeMorph::densityDisconnector() src is empty")
+            print("src.size: {}x{}".format(src.shape[0],src.shape[1]))
+            exit(1)
+        src_map = np.zeros(src.shape, np.uint8)
+        size = (5,5)
+        C=1.0
+        alpha=1.0
+        beta=0.0
+        row = col=0
+        fnVec = []
+        absDiscernThresh = 5.0
+        while(row<src.shape[0]):
+            while(col<src.shape[1]):
+                density = countDk = avgDk=0
+                for i in range(row, row+size[1]):
+                    for j in range(0, col+size[0]):
+                        if(j>=0 and i>=0 and j<src.shape[1] and i<src.shape[0]):
+                            lc = src[i,j]
+                            if(lc>absDiscernThresh):
+                                density+=1
+                                avgDk += lc
+                                countDk+=1
+                density /= (size[0] * size[1])
+                avgDk /= countDk
+                if(countDk==0):
+                    avgDk = 0
+                fx = C * pow(density,alpha) * pow(avgDk,beta)
+                if(fx>0):
+                    fnVec.append(fx)
+                col+=1
+            col=0
+            row+=1
     
-        //calculate knee of curve for fx for filtering
-        KneeCurve kc;
-        int bestIdx;
-        float fxThresh=0.0;
-        if(fnVec.size()>0) {
-            try {
-                bestIdx = kc.kneeCurvePoint(fnVec);
-                //fx threshold filtering
-                fxThresh = fnVec.at(bestIdx);
-            } catch(const std::out_of_range &oor) {
-                printf("ShapeMorph::densityConnector() out of range!\n");
-                printf("fnVec.size: %lu\n",fnVec.size());
-                printf("BestIdx: %d\n",bestIdx);
-                exit(1);
-            }
-        }
-        //connect nearest neighbors
-        double b = fxThresh;
-        double a = pow(-coeff*log(1.0-q)/(3.14159 * b),0.5);
-        Mat result = src.clone();
-        Mat temp = src.clone();
-        row=0; col=0;
-        a = round(a) + 1;
-        //if(*max_element(src.begin<uchar>(),src.end<uchar>())==163) {
-        //cout << a << endl;
-        //a = 7;
-        //}
-        double cutLength = a;
+        #calculate knee of curve for fx for filtering
+        fxThresh=0.0
+        if(len(fnVec)>0):
+            try:
+                bestIdx, fnVec = kc.kneeCurvePoint(fnVec)
+                #fx threshold filtering
+                fxThresh = fnVec[bestIdx]
+            except Exception:
+                traceback.print_exc()
+                print("ShapeMorph::densityConnector() out of range!")
+                print("fnVec.size: {}".format(len(fnVec)))
+                print("BestIdx: {}".format(bestIdx))
+                exit(1)
+        #connect nearest neighbors
+        b = fxThresh
+        a = pow(-coeff*math.log(1.0-q)/(3.14159 * b),0.5)
+        result = np.copy(src)
+        temp = np.copy(src)
+        row = col=0
+        a = round(a) + 1
+        cutLength = a
     
         Pathfind pf;
         while(row<src.rows) {
@@ -947,7 +904,7 @@ class ShapeMorph:
                 int lc = src.at<uchar>(row,col);
                 bool isDisconnected = false;
                 if(lc>0) {
-                    if((row-1>=0 and result.at<uchar>(row-1,col)==0) || (row+1<src.rows and result.at<uchar>(row+1,col)==0)) {
+                    if((row-1>=0 and result.at<uchar>(row-1,col)==0) or (row+1<src.rows and result.at<uchar>(row+1,col)==0)) {
                         //> going vertical down
                         double length = 0.0;
                         vector<Point> seed_vec;
@@ -989,7 +946,7 @@ class ShapeMorph:
                         }
                     }
                     if(!isDisconnected) {
-                        if((col-1>=0 and result.at<uchar>(row,col-1)==0) || (col+1<src.cols and result.at<uchar>(row,col+1)==0)) {
+                        if((col-1>=0 and result.at<uchar>(row,col-1)==0) or (col+1<src.cols and result.at<uchar>(row,col+1)==0)) {
                             //> going horizontal right
                             double length = 0.0;
                             vector<Point> seed_vec2;

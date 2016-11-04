@@ -45,6 +45,15 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-result = np.zeros((20,20), np.uint8)
-cv2.line(result,(0,0),(19,19),(255),1)
-fn.imgshow(result)
+from Queue import PriorityQueue
+
+a = (5,10,20)
+b = (1,6,4)
+c = (1,6,2)
+q = PriorityQueue(3)
+q.put(a)
+q.put(b)
+q.put(c)
+print q.queue[0]
+
+print len(q.queue)
