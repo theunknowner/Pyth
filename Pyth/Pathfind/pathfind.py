@@ -80,15 +80,14 @@ class Pathfind:
         pNode1 = Node(start, 0, 0)
         pNode1.calculateFValue(end)
         q[qi].put(pNode1)
-        print id(q[qi].queue[0])
     
         while not q[qi].empty():
-            print row,",",col
             # get the current node w/ the lowest FValue
             # from the list of open nodes
             pNode1 = Node( q[qi].queue[0].getPos(), q[qi].queue[0].getGValue(), q[qi].queue[0].getFValue())
             row = pNode1.getPos()[0]
             col = pNode1.getPos()[1]
+            #print "{}) {},{} - {},{} - {}, {}".format(i,col,row,jNext,iNext,pNode1.getGValue(),pNode1.getFValue())
             
             if(pNode1.getGValue()==steps):
                 return results
@@ -128,9 +127,9 @@ class Pathfind:
                 # if not wall (obstacle) nor in the closed list
                 if( not (iNext<0 or iNext>src.shape[0]-1 or jNext<0 or jNext>src.shape[1]-1 or
                         src[iNext,jNext]==0 or closeNodes[iNext][jNext] == 1) ):
-    
+                    
                     # generate a child node
-                    pNode2 = Node( (jNext, iNext), pNode1.getGValue(), pNode1.getFValue())
+                    pNode2 = Node( (iNext, jNext), pNode1.getGValue(), pNode1.getFValue())
                     pNode2.updateGValue(i)
                     pNode2.calculateFValue(end)
     
@@ -185,11 +184,11 @@ if __name__ == "__main__":
     import functions as fn
     pf = Pathfind()
     src = cv2.imread("/home/jason/Desktop/workspace/pic1.png",0)
-    results = pf.run(src, (32,51), (92,55), 8)
+    results = pf.run(src, (40,39), (66,51), 8)
     pathPoints = pf.getPathPoints()
     print pathPoints
     print pf.isPathFound()
-    #fn.imgshow(results)
+    fn.imgshow(results)
     #dirMap = np.zeros((140,140), np.uint8)
     #for i in range(0, len(pathPoints)):
     #    dirMap[pathPoints[i]] = 255

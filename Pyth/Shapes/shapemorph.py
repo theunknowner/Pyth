@@ -19,6 +19,7 @@ import traceback
 import kneecurve as kc
 from Algorithms import jaysort
 from hsl import Hsl
+from Pathfind.pathfind import Pathfind
 
 class ShapeMorph:
     debugMode = False
@@ -898,103 +899,77 @@ class ShapeMorph:
         a = round(a) + 1
         cutLength = a
     
-        Pathfind pf;
-        while(row<src.rows) {
-            while(col<src.cols) {
-                int lc = src.at<uchar>(row,col);
-                bool isDisconnected = false;
-                if(lc>0) {
-                    if((row-1>=0 and result.at<uchar>(row-1,col)==0) or (row+1<src.rows and result.at<uchar>(row+1,col)==0)) {
-                        //> going vertical down
-                        double length = 0.0;
-                        vector<Point> seed_vec;
-                        bool leftCheck=false, rightCheck=false;
-                        for(int i=row-1; i<(row+a+1); i++) {
-                            if(temp.at<uchar>(i,col-1)>0) {
-                                length++;
-                            }
-                            if(col-1>=0) {
-                                if(temp.at<uchar>(i,col-1)>0 and leftCheck==false) {
-                                    seed_vec.push_back(Point(col-1,i));
-                                    leftCheck=true;
-                                }
-                            }
-                            if(col+1<src.cols) {
-                                if(temp.at<uchar>(i,col+1)>0 and rightCheck==false) {
-                                    seed_vec.push_back(Point(col+1,i));
-                                    rightCheck=true;
-                                }
-                            }
-                        }
-                        cutLength = min(a,length);
-                        for(int i=row-1; i<(row+cutLength+1); i++) {
-                            if(i<src.rows) {
-                                temp.at<uchar>(i,col) = 0;
-                            }
-                        }
-                        if(seed_vec.size()>1) {
-                            Mat pathMap = pf.run(temp,seed_vec.at(0),seed_vec.at(1),8,50);
-                            bool crossover = pf.isPathFound();
-                            if(!crossover) {
-                                result = temp.clone();
-                                isDisconnected = true;
-                            } else {
-                                temp = result.clone();
-                            }
-                        } else {
-                            temp = result.clone();
-                        }
-                    }
-                    if(!isDisconnected) {
-                        if((col-1>=0 and result.at<uchar>(row,col-1)==0) or (col+1<src.cols and result.at<uchar>(row,col+1)==0)) {
-                            //> going horizontal right
-                            double length = 0.0;
-                            vector<Point> seed_vec2;
-                            bool topCheck=false, bottomCheck=false;
-                            for(int j=col-1; j<(col+a+1); j++) {
-                                if(temp.at<uchar>(row-1,j)>0) {
-                                    length++;
-                                }
-                                if(row-1>=0) {
-                                    if(temp.at<uchar>(row-1,j)>0 and topCheck==false) {
-                                        seed_vec2.push_back(Point(j,row-1));
-                                        topCheck=true;
-                                    }
-                                }
-                                if(row+1<src.rows) {
-                                    if(temp.at<uchar>(row+1,j)>0 and bottomCheck==false) {
-                                        seed_vec2.push_back(Point(j,row+1));
-                                        bottomCheck=true;
-                                    }
-                                }
-                            }
-                            cutLength = min(a,length);
-                            for(int j=col; j<(col+cutLength); j++) {
-                                if(j<src.cols)
-                                    temp.at<uchar>(row,j) = 0;
-                            }
+        pf = Pathfind()
+        while(row<src.shape[0]):
+            while(col<src.shape[1]):
+                lc = src[row,col]
+                isDisconnected = False
+                if(lc>0):
+                    if((row-1>=0 and result[row-1,col]==0) or (row+1<src.shape[0] and result[row+1,col]==0)):
+                        #> going vertical down
+                        length = 0.0
+                        seed_vec = []
+                        leftCheck = rightCheck = False
+                        for i in range(row-1, row+a+1):
+                            if(temp[i,col-1]>0):
+                                length+=1
+                            if(col-1>=0):
+                                if(temp[i,col-1]>0 and leftCheck==False):
+                                    seed_vec.append((i,col-1,))
+                                    leftCheck=True
+                            if(col+1<src.shape[1]):
+                                if(temp[i,col+1]>0 and rightCheck==False):
+                                    seed_vec.append((i,col+1))
+                                    rightCheck=True
+                        cutLength = min(a,length)
+                        for i in range(row-1, row+cutLength+1):
+                            if(i<src.shape[0]):
+                                temp[i,col] = 0
+                        if(len(seed_vec)>1):
+                            pathMap = pf.run(temp,seed_vec[0],seed_vec[1],8,50)
+                            crossover = pf.isPathFound()
+                            if not crossover:
+                                result = np.copy(temp)
+                                isDisconnected = True
+                            else:
+                                temp = np.copy(result)
+                        else:
+                            temp = np.copy(result)
+                    if not isDisconnected:
+                        if((col-1>=0 and result[row,col-1]==0) or (col+1<src.shape[1] and result[row,col+1]==0)):
+                            #> going horizontal right
+                            length = 0.0
+                            seed_vec2 = []
+                            topCheck = bottomCheck = False
+                            for j in range(col-1, col+a+1):
+                                if(temp[row-1,j]>0):
+                                    length+=1
+                                if(row-1>=0):
+                                    if(temp[row-1,j]>0 and topCheck==False):
+                                        seed_vec2.append((row-1,j))
+                                        topCheck=True
+                                if(row+1<src.shape[0]):
+                                    if(temp[row+1,j]>0 and bottomCheck==False):
+                                        seed_vec2.append((row+1,j))
+                                        bottomCheck=True
+                            cutLength = min(a,length)
+                            for j in range(col, col+cutLength):
+                                if(j<src.shape[1]):
+                                    temp[row,j] = 0
     
-                            if(seed_vec2.size()>1) {
-                                Mat pathMap2 = pf.run(temp,seed_vec2.at(0),seed_vec2.at(1),8,50);
-                                bool crossover2 = pf.isPathFound();
-                                if(!crossover2) {
-                                    result = temp.clone();
-                                } else {
-                                    temp = result.clone();
-                                }
-                            } else {
-                                temp = result.clone();
-                            }
-                        }
-                    }
-                }
-                col++;
-            }
+                            if(len(seed_vec2)>1):
+                                pathMap2 = pf.run(temp,seed_vec2[0],seed_vec2[1],8,50)
+                                crossover2 = pf.isPathFound()
+                                if not crossover2:
+                                    result = np.copy(temp)
+                                else:
+                                    temp = np.copy(result)
+                            else:
+                                temp = np.copy(result)
+                col+=1
             col=0;
-            row++;
-        }
-        return result;
-    }
+            row+=1
+        return result
     
     //! gets the black discs within a feature
     vector<Mat> ShapeMorph::liquidFeatureExtractionInverse(Mat src) {

@@ -32,7 +32,7 @@ class Node:
     
     # Determine FValue (in the priority queue)
     def __lt__(self, other):
-        return self.getFValue() > other.getFValue()
+        return self.getFValue() < other.getFValue()
     
 if __name__ =="__main__":
     n1 = Node((1,1), 0,0)
