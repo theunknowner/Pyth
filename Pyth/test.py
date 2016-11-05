@@ -45,15 +45,7 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-from Queue import PriorityQueue
-
-a = (5,10,20)
-b = (1,6,4)
-c = (1,6,2)
-q = PriorityQueue(3)
-q.put(a)
-q.put(b)
-q.put(c)
-print q.queue[0]
-
-print len(q.queue)
+vec = np.zeros((3,3),np.uint8)
+vec[1,2] = 1
+pts = cv2.findNonZero(vec)
+print pts

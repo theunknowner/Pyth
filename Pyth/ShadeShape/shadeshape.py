@@ -18,29 +18,26 @@ import functions as fn
 winName = "Interactive Islands"
 winName2 = "Extracted"
 winName3 = "40x40"
-'''
+
 def onMouseCheckIslands(event, x, y, flags, param):
-    ShadeShape &ss = *((ShadeShape*)param);
-    Mat img = ss.image().clone();
-    Islands island;
-    static TestML ml;
-    if  ( event == EVENT_LBUTTONDOWN ){
-        island = ss.getIslandWithPoint(Point(x,y));
-        if(!island.isEmpty()) {
-            char text[100];
-            int lum = img.at<uchar>(y,x);
-            int area = island.area();
-            int shadeNum = ss.getIndexOfShade(island.shade());
-            float nnResult = *max_element(island.nn_results().begin<float>(),island.nn_results().end<float>());
-            cvtColor(img,img,CV_GRAY2BGR);
-            for(auto it=island.coordinates().begin(); it!=island.coordinates().end(); it++) {
-                int x = it->second.x;
-                int y = it->second.y;
-                img.at<Vec3b>(y,x) = Vec3b(0,255,0);
-            }
-            String shade_shape = island.shape_name() + "_s" + toString(shadeNum);
-            sprintf(text,"(%d,%d) | Lum: %d | Area: %d | ShadeShape: %s | NN: %f",x,y,lum,area,shade_shape.c_str(),nnResult);
-            cv::displayStatusBar(winName,text);
+    ss = param
+    img = ss.image().clone();
+    #static TestML ml;
+    if  ( event == cv2.EVENT_LBUTTONDOWN ):
+        island = ss.getIslandWithPoint((y,x))
+        if not island.isEmpty():
+            lum = img[y,x]
+            area = island.area()
+            shadeNum = ss.getIndexOfShade(island.shade())
+            nnResult = max(island.nn_results())
+            img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+            for value in island.coordinates().values():
+                x = value[1]
+                y = value[0]
+                img[y,x] = (0,255,0)
+            shade_shape = island.shape_name() + "_s" + str(shadeNum)
+            text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {}".format(x,y,lum,area,shade_shape,nnResult)
+            #displayStatusBar(winName,text);
             char textScore[100];
             char textScore2[20];
             Mat nnResults = island.nn_results();
@@ -59,7 +56,7 @@ def onMouseCheckIslands(event, x, y, flags, param):
     }
     imshow(winName,img);
 }
-'''
+
 
 '''
 void onMouseCheckSubIslands(int event, int x, int y, int flags, void* param) {
@@ -264,7 +261,7 @@ class ShadeShape:
     def extract(self, id, disconnectIslands=False, debugSym=0):
         self.id = id
         self.ss_name = fn.getFileName(id.name())
-        self.img = np.copy(id.image())
+        self.img = id.image().copy()
         self.ssArea = cv2.countNonZero(self.img)
         featureVec = self.extractFeatures(self.img)
         for i in range(0,len(featureVec)):
@@ -312,8 +309,9 @@ class ShadeShape:
     def get_shades(self):
         return self.shadeVec
     
+    # in python pt is a point tuple in form (y,x)
     def getIslandWithPoint(self, pt):
-        coords = str(pt[0])+","+str(pt[1])
+        coords = str(pt[1])+","+str(pt[0])
         for i in range(0, self.numOfFeats):
             for j in range(0, self.feature(i).numOfIsls):
                 island = self.feature(i).island(j)
@@ -325,14 +323,12 @@ class ShadeShape:
     def getMaxArea(self):
         return max(self.areaVec)
     
-    ''' TODO
     def showInteractiveIslands(self):
         winName = self.ss_name;
         cv2.namedWindow(winName, cv2.WINDOW_NORMAL)
-        cv2.setMouseCallback(winName,onMouseCheckIslands, self)
+        cv2.setMouseCallback(winName,onMouseCheckIslands,self)
         cv2.imshow(winName,self.img)
         cv2.waitKey(0)
-    '''
     
     def set_island_shade(self, featNum, islNum, newShade):
         island = self.feature(featNum).island(islNum)
@@ -361,7 +357,7 @@ class ShadeShape:
                         weak = self.isBridgeWeak(src,col,row)
                         if(weak):
                             ptsVec.append([col,row])
-        results = np.copy(src)
+        results = src.copy()
         for i in range(0, len(ptsVec)):
             results[ptsVec[i][1], ptsVec[i][0]] = 0
         fn.imgshow(src)

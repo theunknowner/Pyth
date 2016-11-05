@@ -16,7 +16,7 @@ import numpy as np
 import math
 import traceback
 
-import kneecurve as kc
+from Kneecurve import kneecurve as kc
 from Algorithms import jaysort
 from hsl import Hsl
 from Pathfind.pathfind import Pathfind
@@ -971,19 +971,14 @@ class ShapeMorph:
             row+=1
         return result
     
-    //! gets the black discs within a feature
-    vector<Mat> ShapeMorph::liquidFeatureExtractionInverse(Mat src) {
-        vector<vector<Point> > contours;
-        vector<Vec4i> hierarchy;
-        cv::findContours(src,contours,hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE);
-        vector<Mat> vecMat;
-        for(unsigned int i=0; i< contours.size(); i++ ) {
-            if(hierarchy.at(i)[3]>=0) {
-                Mat drawing = Mat::zeros(src.size(),CV_8U);
-                drawContours( drawing, contours, i, Scalar(255), CV_FILLED, 8, hierarchy, 0, Point() );
-                vecMat.push_back(drawing);
-            }
-        }
-        return vecMat;
-    }
+    #//! gets the black discs within a feature
+    def liquidFeatureExtractionInverse(self, src):
+        contours, hierarchy = cv2.findContours(src, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        vecMat = []
+        for i in range(0, len(contours)):
+            if(hierarchy.at(i)[3]>=0):
+                drawing = np.zeros(src.shape, np.uint8)
+                cv2.drawContours( drawing, contours, i, (255), -1, 8, hierarchy, 0)
+                vecMat.append(drawing)
+        return vecMat
     

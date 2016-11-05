@@ -28,11 +28,11 @@ class Islands:
         xCenter = 0
         yCenter = 0
         for i in range(len(nonZeroCoord)):
-            x = nonZeroCoord[i][0][0]
-            y = nonZeroCoord[i][0][1]
-            coords = str(x)+","+str(y)
+            x = nonZeroCoord[i][0][1]
+            y = nonZeroCoord[i][0][0]
+            coords = str(y)+","+str(x)
             if(self.coordMap.has_key(coords)==False):
-                self.coordMap[coords] = [x,y]
+                self.coordMap[coords] = (y,x)
             
             xCenter += x
             yCenter += y
@@ -89,7 +89,7 @@ class Islands:
     def set_island_shade(self,shade):
         for i in range(len(self.islandImg)):
             for j in range(len(self.islandImg[i])):
-                coords = str(j) + "," + str(i)
+                coords = str(i) + "," + str(j)
                 if(self.islandImg[i,j]>0 and self.coordMap.has_key(coords)):
                     self.islandImg[i,j] = shade;
                 else:
@@ -101,7 +101,7 @@ class Islands:
     def coordinates(self):
         return self.coordMap
     
-    def containsCoordinates(self,coords,pt=[]):
+    def containsCoordinates(self,coords,pt=()):
         if(coords!=""):
             if(self.coordMap.has_key(coords)):
                 return True
