@@ -648,7 +648,7 @@ class ShapeMorph:
             print("ShapeMorph::densityConnector() src is empty")
             print("src.size: {}x{}".format(src.shape[0],src.shape[1]))
             exit(1)
-        lineVal = src.max()
+        lineVal = int(src.max())
         size = (5,5)
         C = 1.0
         alpha = 1.0
@@ -668,9 +668,7 @@ class ShapeMorph:
                                 avgDk += lc
                                 countDk+=1
                 density /= (size[0] * size[1])
-                avgDk /= countDk
-                if(countDk==0):
-                    avgDk = 0
+                avgDk = avgDk/countDk if countDk>0 else 0 
                 fx = C * pow(density,alpha) * pow(avgDk,beta)
                 if(fx>0):
                     fnVec.append(fx)
@@ -701,7 +699,7 @@ class ShapeMorph:
         a = pow(-coeff*math.log(1.0-q)/(3.14159 * b),0.5) + increment
         result = np.zeros(src.shape, np.uint8)
         row = col=0
-        a = math.ceil(a)
+        a = int(math.ceil(a))
         square = (a,a)
         while(row<src.shape[0]):
             while(col<src.shape[1]):
@@ -715,8 +713,8 @@ class ShapeMorph:
                                 lc = src[i,j]
                                 dist = abs(j-col) + abs(i-row)
                                 if(dist<=a and lc>absDiscernThresh):
-                                    if((j,i)!=(col,row)):
-                                        cv2.line(result,(j,i),(col,row),(lineVal),1)
+                                    if((i,j)!=(row,col)):
+                                        cv2.line(result,(i,j),(row,col),(lineVal),1)
                 col+=1
             col=0;
             row+=1

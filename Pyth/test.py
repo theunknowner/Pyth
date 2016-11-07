@@ -45,7 +45,7 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-vec = np.zeros((3,3),np.uint8)
-vec[1,2] = 1
-pts = cv2.findNonZero(vec)
-print pts
+ptsVec = [[]] * 256
+for i in range(0,1000):
+    ptsVec[255].append(i)
+    

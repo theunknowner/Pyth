@@ -3,10 +3,12 @@ import cv2
 
 from islands import Islands
 import functions as fn
-#from Shapes.shapes import Shapes
+from Shapes.shapes import Shapes
+from Shapes.shapemorph import ShapeMorph
+from NeuralNetwork.ann import ANN
 
 class Features:
-    parentId = object #ImageData parentID
+    parentId = None #ImageData parentID
 
     islandVec = []
     shadeVec = []
@@ -25,15 +27,14 @@ class Features:
         thresh = 0.001
         littleIslands = self.extractIslands(featureImg, thresh)
         for i in range(len(littleIslands)):
-            island = Islands(littleIslands.at(i))
-            crop_img = fn.cropImage(island.image());
+            island = Islands(littleIslands[i])
+            crop_img = fn.cropImage(island.image())
             frameArea = crop_img.size
             
             if(frameArea<=50):
-                #shapes = Shapes()
-                #island.shape_name("Unknown")
-                #island.shape(shapes.getShapeIndex(island.shape_name()))
-                pass # TODO
+                shapes = Shapes()
+                island.shape_name("Unknown")
+                island.shape(shapes.getShapeIndex(island.shape_name()))
             if(disconnectIslands):
                 crop_img = fn.cropImage(island.image())
                 frameArea = float(crop_img.size) / island.image().size
@@ -57,10 +58,10 @@ class Features:
                         self.appendIslands(islandVec2)
                         island = Islands(newIslandImg)
                         
-            self.storeIsland(island);
-        self.numOfIsls = len(self.islandVec);
-        self.determineFeatureShape(featureImg);
-        self.getShadesOfIslands();
+            self.storeIsland(island)
+        self.numOfIsls = len(self.islandVec)
+        self.determineFeatureShape(featureImg)
+        self.getShadesOfIslands()
         
     def island(self,islNum):
         return self.islandVec[islNum]
@@ -94,14 +95,43 @@ class Features:
     
     ########### PRIVATE FUNCTIONS ############
     def extractIslands(self,featureImg, thresh):
-        something_here = 1
-        #needs shapemorph class to implement
-        return something_here
+        sm = ShapeMorph()
+        islandVec = []
+        ptsVec = {}
+        for row in range(0, featureImg.shape[0]):
+            for col in range(0, featureImg.shape[1]):
+                val = featureImg[row,col]
+                if(val>0):
+                    if not ptsVec.has_key(val):
+                        ptsVec[val] = []
+                    ptsVec[val].append((row,col))
+        #> prev size of image before resizing to 140x140
+        prevSize = self.parentId.prevSize()
+        #> magnification factor == (140 x 140) / (L x W)
+        m = featureImg.size / (float(prevSize[1]) * prevSize[0])
+        for key in ptsVec:
+            shadeShape = np.zeros(featureImg.shape, np.uint8)
+            if(len(ptsVec[key])>0):
+                for k in range(0, len(ptsVec[key])):
+                    shadeShape[ptsVec[key][k]] = key
+                # helps connect islands that should be together
+                shadeShape = sm.densityConnector(shadeShape, 0.999999, m)
+                littleIslands = sm.liquidFeatureExtraction(shadeShape,0,0,0)
+                for k in range(0, len(littleIslands)):
+                    relArea = cv2.countNonZero(littleIslands[k]) / float(self.parentId.area())
+                    if(relArea>thresh):
+                        islandVec.append(littleIslands[k])
+        return islandVec
         
     def disconnectIslands(self,featureImg):
-        something_here = 1
-        #needs shapemorph class to implement
-        return something_here
+        sm = ShapeMorph()
+        islandVec = []
+        shadeShape = sm.densityDisconnector(featureImg,0.999999)
+        littleIslands = sm.liquidFeatureExtraction(shadeShape,0,0,0)
+        for k in range(0, len(littleIslands)):
+            if(cv2.countNonZero(littleIslands[k])>5):
+                islandVec.append(littleIslands[k])
+        return islandVec
         
     def storeIsland(self,island):
         self.islandVec.append(island)
@@ -109,9 +139,32 @@ class Features:
     def appendIslands(self,islandVec):
         self.islandVec.extend(islandVec)
         
-    def determinFeatureShape(self,featureImg):
-        something_here = 1
-        #needs TestML to implement
+    def determineFeatureShape(self,featureImg):
+        ml = ANN()
+        sampleVec = []
+        sample = featureImg.copy()
+        sample *= 255
+        sample = ml.prepareImage(sample,ml.getSize())
+        sampleVec.append(sample)
+    
+        results = ml.runANN2(sampleVec)
+        self.NN_Results = results
+        max_elem = results[0].max()
+        labelNum = results[0].tolist().index(max_elem)
+        thresh = 0.0
+        if(max_elem<thresh):
+            labelNum = ml.getShapeIndex2("Default")
+        shapeName = ml.getShapeName2(labelNum)
+        if(labelNum==0 or labelNum==1):
+            results = ml.runANN2b(sampleVec,labelNum)
+            if(results[0,0]>0.0):
+                shapeName = "Comp-" + shapeName
+            else:
+                shapeName = "Incomp-" + shapeName
+        labelNum = ml.getShapeIndex(shapeName)
+        self.NN_Score = max_elem
+        self.featShape = labelNum
+        self.featShapeName = shapeName
         
     def getShadesOfIslands(self):
         maxVal = self.featureImg.max()

@@ -1,6 +1,7 @@
 from ImageData.pixeldata import PixelData
 import numpy as np
 import csv
+import cv2
 
 class ImageData:
     file_path = ""
@@ -13,6 +14,8 @@ class ImageData:
     imgCols = 0
     matImage = []
     imgName = ""
+    imgArea = 0
+    
     def __init__(self,img,name="",option=0):
         self.extract(img, name, option)
         
@@ -23,6 +26,7 @@ class ImageData:
         self.prevImgSize = [img.shape[0],img.shape[1]]
         self.imgRows = img.shape[0]
         self.imgCols = img.shape[1]
+        self.imgArea = cv2.countNonZero(img)
         
         if(option==1):
             self.pixelVec = np.zeros((self.imgRows,self.imgCols),object)
@@ -76,6 +80,9 @@ class ImageData:
     
     def pixel(self,row,col):
         return self.pixelVec[row][col]
+    
+    def area(self):
+        return self.imgArea
     
     def writePrevSize(self,filename):
         if(filename==""): filename = self.imgName
