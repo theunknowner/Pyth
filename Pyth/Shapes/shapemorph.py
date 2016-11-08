@@ -20,6 +20,7 @@ from Kneecurve import kneecurve as kc
 from Algorithms import jaysort
 from hsl import Hsl
 from Pathfind.pathfind import Pathfind
+import functions as fn
 
 class ShapeMorph:
     debugMode = False
@@ -549,9 +550,9 @@ class ShapeMorph:
                 if(src[row,col]>0 and src_map[row,col]==0):
                     ptVec = []
                     temp = []
-                    ptVec.append([row,col])
+                    ptVec.append((row,col))
                     src_map[row,col] = 255
-                    temp.append([row,col])
+                    temp.append((row,col))
                     while(len(temp)>0):
                         # in python Points are tuples in form of (y,x)
                         up = (temp[0][0]-1,temp[0][1])
@@ -560,32 +561,32 @@ class ShapeMorph:
                         down = (temp[0][0]+1,temp[0][1])
                         downLeft = (temp[0][0]+1,temp[0][1]-1)
                         downRight = (temp[0][0]+1,temp[0][1]+1)
-                        if(up[1]>=0):
+                        if(up[0]>=0):
                             if(src_map[up]==0 and src[up]>lcThresh):
                                 ptVec.append(up)
                                 src_map[up]=255
                                 temp.append(up)
-                        if(left[0]>=0):
+                        if(left[1]>=0):
                             if(src_map[left]==0 and src[left]>lcThresh):
                                 ptVec.append(left)
                                 src_map[left]=255
                                 temp.append(left)
-                        if(right[0]<src.shape[1]):
+                        if(right[1]<src.shape[1]):
                             if(src_map[right]==0 and src[right]>lcThresh):
                                 ptVec.append(right)
                                 src_map[right]=255
                                 temp.append(right)
-                        if(down[1]<src.shape[0]):
+                        if(down[0]<src.shape[0]):
                             if(src_map[down]==0 and src[down]>lcThresh):
                                 ptVec.append(down)
                                 src_map[down]=255
                                 temp.append(down)
-                        if(down[1]<src.shape[0] and left[0]>=0):
+                        if(down[0]<src.shape[0] and left[1]>=0):
                             if(src_map[downLeft]==0 and src[downLeft]>lcThresh):
                                 ptVec.append(downLeft)
                                 src_map[downLeft]=255
                                 temp.append(downLeft)
-                        if(down[1]<src.shape[0] and right[0]<src.shape[1]):
+                        if(down[0]<src.shape[0] and right[1]<src.shape[1]):
                             if(src_map[downRight]==0 and src[downRight]>lcThresh):
                                 ptVec.append(downRight)
                                 src_map[downRight]=255
@@ -658,7 +659,7 @@ class ShapeMorph:
         absDiscernThresh=5.0
         while(row<src.shape[0]):
             while(col<src.shape[1]):
-                density = countDk = avgDk=0
+                density = countDk = avgDk=0.0
                 for i in range(row,row+size[1]):
                     for j in range(col,col+size[0]):
                         if(j>=0 and i>=0 and j<src.shape[1] and i<src.shape[0]):
@@ -668,7 +669,7 @@ class ShapeMorph:
                                 avgDk += lc
                                 countDk+=1
                 density /= (size[0] * size[1])
-                avgDk = avgDk/countDk if countDk>0 else 0 
+                avgDk = avgDk/countDk if countDk>0.0 else 0.0
                 fx = C * pow(density,alpha) * pow(avgDk,beta)
                 if(fx>0):
                     fnVec.append(fx)
@@ -687,7 +688,7 @@ class ShapeMorph:
                 if(percent>=0.8999999):
                     bestIdx = 0.75 * len(fnVec)
                 #fx threshold filtering
-                fxThresh = fnVec[bestIdx]
+                fxThresh = fnVec[int(bestIdx)]
             except Exception:
                 traceback.print_exc()
                 print("ShapeMorph::densityConnector() out of range!")
@@ -714,7 +715,7 @@ class ShapeMorph:
                                 dist = abs(j-col) + abs(i-row)
                                 if(dist<=a and lc>absDiscernThresh):
                                     if((i,j)!=(row,col)):
-                                        cv2.line(result,(i,j),(row,col),(lineVal),1)
+                                        cv2.line(result,(j,i),(col,row),(lineVal),1)
                 col+=1
             col=0;
             row+=1

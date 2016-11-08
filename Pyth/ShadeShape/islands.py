@@ -3,6 +3,7 @@ import numpy as np
 
 from Shapes.shapemorph import ShapeMorph
 from NeuralNetwork.ann import ANN
+import functions as fn
 
 def onMouseCheckSubIslands(event, x, y, flags, param):
     island = param
@@ -57,7 +58,6 @@ class Islands:
     NN_Score_2 = 0.0
     arc_length = 0
     
-    
     def determineIslandShape(self, islandImg):
         ml = ANN()
         sampleVec = []
@@ -93,13 +93,13 @@ class Islands:
         self.nn_prepared_img = sample
         
     def getIslandPoints(self, islandImg):
-        nonZeroCoord = cv2.findNonZero(islandImg);
+        nonZeroCoord = cv2.findNonZero(islandImg) #this function returns points in ndarray form [x,y]
         # gets the center of mass and stores all the coords in a map
         xCenter = 0
         yCenter = 0
         for i in range(len(nonZeroCoord)):
-            x = nonZeroCoord[i][0][1]
-            y = nonZeroCoord[i][0][0]
+            x = nonZeroCoord[i][0][0]
+            y = nonZeroCoord[i][0][1]
             coords = str(y)+","+str(x)
             if(self.coordMap.has_key(coords)==False):
                 self.coordMap[coords] = (y,x)
@@ -186,7 +186,9 @@ class Islands:
     def centerOfMass(self):       
         return self._centerOfMass
     
-    def coordinates(self):
+    def coordinates(self, coordMap=None):
+        if coordMap!=None:
+            self.coordMap = coordMap
         return self.coordMap
     
     def containsCoordinates(self,coords,pt=()):

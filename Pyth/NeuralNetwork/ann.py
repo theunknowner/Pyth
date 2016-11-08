@@ -130,6 +130,7 @@ class ANN:
             print("Size: {}".format(_size))
             print("Max Size: {}".format(maxSize))
             print("Multiplier: {}".format(multiplier))
+            fn.imgshow(crop_img)
             exit(1)
             
         img[img > 0] = 255

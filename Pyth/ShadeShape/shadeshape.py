@@ -17,73 +17,6 @@ import functions as fn
 from NeuralNetwork.ann import ANN
 from Shapes.shapemorph import ShapeMorph
 
-winName = "Interactive Islands"
-winName2 = "Extracted"
-winName3 = "40x40"
-
-def onMouseCheckIslands(event, x, y, flags, param):
-    ss = param
-    img = ss.image().copy()
-    if not hasattr(onMouseCheckSubIslands, "ml"):
-        ml = ANN()
-    if  ( event == cv2.EVENT_LBUTTONDOWN ):
-        island = ss.getIslandWithPoint((y,x))
-        if island!=None and not island.isEmpty():
-            lum = img[y,x]
-            area = island.area()
-            shadeNum = ss.getIndexOfShade(island.shade())
-            nnResult = max(island.nn_results())
-            img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-            for value in island.coordinates().values():
-                x = value[1]
-                y = value[0]
-                img[y,x] = (0,255,0)
-            shade_shape = island.shape_name() + "_s" + str(shadeNum)
-            text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {}".format(x,y,lum,area,shade_shape,nnResult)
-            cv2.displayStatusBar(winName,text)
-            nnResults = island.nn_results()
-            print nnResults
-            textScore = "[{:.5f}, {:.5f}, {:.5f}, {:.5f}, {:.5f}]".format(nnResults[0,0],nnResults[0,1],nnResults[0,2],nnResults[0,3],nnResults[0,4])
-            textScore2 = "{:.5f}".format(island.nn_score_2())
-            cv2.namedWindow(winName2, cv2.WINDOW_NORMAL)
-            cv2.displayStatusBar(winName2,textScore)
-            cv2.imshow(winName2,island.image())
-            cv2.namedWindow(winName3, cv2.WINDOW_NORMAL)
-            cv2.displayStatusBar(winName3,textScore2)
-            cv2.imshow(winName3,island.nn_image())
-    if(event == cv2.EVENT_LBUTTONUP):
-        img = ss.image().copy()
-    cv2.imshow(winName,img)
-
-
-def onMouseCheckSubIslands(event, x, y, flags, param):
-    ss = param
-    img = ss.image().copy()
-    if not hasattr(onMouseCheckSubIslands, "ml"):
-        ml = ANN()
-    islandExist = False
-    if  ( event == cv2.EVENT_LBUTTONDOWN ):
-        island = ss.getIslandWithPoint((y,x))
-        if not island.isEmpty():
-            lum = img[y,x]
-            area = island.area()
-            shadeNum = ss.getIndexOfShade(island.shade())
-            nnResult = max(island.nn_results())
-            img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-            for value in island.coordinates().values():
-                x = value[1]
-                y = value[0]
-                img[y,x] = (0,255,0)
-            shade_shape = island.shape_name() + "_s" + str(shadeNum)
-            text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {} | {}".format(x,y,lum,area,shade_shape,nnResult,ss.area())
-            cv2.displayStatusBar(winName,text)
-            islandExist = True
-    if(event == cv2.EVENT_LBUTTONUP):
-        img = ss.image().copy()
-    cv2.imshow(winName,img)
-    if(islandExist):
-        island.showInteractiveSubIslands()
-
 class ShadeShape:
     ss_name = ""
     featureVec = []
@@ -94,6 +27,72 @@ class ShadeShape:
     ssAreaPostDensityConnector = 0
     img = None
     imgdata = None
+    
+    winName = ""
+    winName2 = "Extracted"
+    winName3 = "40x40"
+    
+    def onMouseCheckIslands(self, event, x, y, flags, param):
+        #ss = param
+        img = self.image().copy()
+        if not hasattr(self.onMouseCheckSubIslands, "ml"):
+            ml = ANN()
+        if  ( event == cv2.EVENT_LBUTTONDOWN ):
+            island = self.getIslandWithPoint((y,x))
+            if island!=None and not island.isEmpty():
+                lum = img[y,x]
+                area = island.area()
+                shadeNum = self.getIndexOfShade(island.shade())
+                nnResult = max(island.nn_results()[0])
+                img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+                for value in island.coordinates().values():
+                    x = value[1]
+                    y = value[0]
+                    img[y,x] = (0,255,0)
+                shade_shape = island.shape_name() + "_s" + str(shadeNum)
+                text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {}".format(x,y,lum,area,shade_shape,nnResult)
+                cv2.displayStatusBar(self.winName,text)
+                nnResults = island.nn_results()
+                textScore = "[{:.5f}, {:.5f}, {:.5f}, {:.5f}, {:.5f}]".format(nnResults[0,0],nnResults[0,1],nnResults[0,2],nnResults[0,3],nnResults[0,4])
+                textScore2 = "{:.5f}".format(island.nn_score_2())
+                cv2.namedWindow(self.winName2, cv2.WINDOW_NORMAL)
+                cv2.displayStatusBar(self.winName2,textScore)
+                cv2.imshow(self.winName2,island.image())
+                cv2.namedWindow(self.winName3, cv2.WINDOW_NORMAL)
+                cv2.displayStatusBar(self.winName3,textScore2)
+                cv2.imshow(self.winName3,island.nn_image())
+        if(event == cv2.EVENT_LBUTTONUP):
+            img = self.image().copy()
+        cv2.imshow(self.winName,img)
+
+
+    def onMouseCheckSubIslands(self, event, x, y, flags, param):
+        ss = param
+        img = ss.image().copy()
+        if not hasattr(self.onMouseCheckSubIslands, "ml"):
+            ml = ANN()
+        islandExist = False
+        if  ( event == cv2.EVENT_LBUTTONDOWN ):
+            island = ss.getIslandWithPoint((y,x))
+            if not island.isEmpty():
+                lum = img[y,x]
+                area = island.area()
+                shadeNum = ss.getIndexOfShade(island.shade())
+                nnResult = max(island.nn_results())
+                img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+                for value in island.coordinates().values():
+                    x = value[1]
+                    y = value[0]
+                    img[y,x] = (0,255,0)
+                shade_shape = island.shape_name() + "_s" + str(shadeNum)
+                text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {} | {}".format(x,y,lum,area,shade_shape,nnResult,ss.area())
+                cv2.displayStatusBar(winName,text)
+                islandExist = True
+        if(event == cv2.EVENT_LBUTTONUP):
+            img = ss.image().copy()
+        cv2.imshow(winName,img)
+        if(islandExist):
+            island.showInteractiveSubIslands()
 
     #/******************** PRIVATE FUNCTIONS **********************/
     def isOnTheEdge(self,src, x, y):
@@ -208,6 +207,7 @@ class ShadeShape:
     
     def removeDuplicatePointsFromIslands(self):
         img = self.img
+        src = np.zeros(img.shape, np.uint8)
         for i in range(0, self.numOfFeats):
             for j in range(0, self.feature(i).numOfIsls):
                 isl = self.feature(i).island(j)
@@ -216,15 +216,10 @@ class ShadeShape:
                     col = value[1]
                     row = value[0]
                     val = img[row,col]
+                    src[value] = (255)
                     if(isl.shade()!=val):
                         coordMap.pop(key, None)
-                        
-                for key,value in coordMap.items():
-                    col = value[0]
-                    row = value[1]
-                    val = img[row,col]
-                    if(isl.shade()!=val):
-                        coordMap.pop(key, None)
+                #self.feature(i).island(j).coordinates(coordMap)
     
     def storeIslandAreas(self):
         for i in range(0,self.numOfFeats):
@@ -296,20 +291,12 @@ class ShadeShape:
             for j in range(0, self.feature(i).numOfIsls):
                 island = self.feature(i).island(j)
                 if(island.coordinates().has_key(coords)):
-                    print coords
                     return self.feature(i).island(j)
         return None
     
     #//! returns the largest area of all the islands
     def getMaxArea(self):
         return max(self.areaVec)
-    
-    def showInteractiveIslands(self):
-        winName = self.ss_name;
-        cv2.namedWindow(winName, cv2.WINDOW_NORMAL)
-        cv2.setMouseCallback(winName,onMouseCheckIslands,self)
-        cv2.imshow(winName,self.img)
-        cv2.waitKey(0)
     
     def set_island_shade(self, featNum, islNum, newShade):
         island = self.feature(featNum).island(islNum)
@@ -348,23 +335,26 @@ class ShadeShape:
         isolatedFeatures = sm.liquidFeatureExtraction(results)
         return isolatedFeatures
     
+    def showInteractiveIslands(self):
+        self.winName = self.ss_name;
+        cv2.namedWindow(self.winName, cv2.WINDOW_NORMAL)
+        cv2.setMouseCallback(self.winName,self.onMouseCheckIslands,self)
+        cv2.imshow(self.winName,self.img)
+        cv2.waitKey(0)
+    
     def showInteractiveSubIslands(self):
         winName = self.ss_name
         cv2.namedWindow(winName, cv2.WINDOW_NORMAL)
-        cv2.setMouseCallback(winName,onMouseCheckSubIslands, self)
+        cv2.setMouseCallback(winName,self.onMouseCheckSubIslands, self)
         cv2.imshow(winName,self.img)
         cv2.waitKey(0)
         
 if __name__ == "__main__":
     from ImageData.imagedata import ImageData
-    img = cv2.imread("/home/jason/Desktop/workspace/pic1.png",0)
-    imgdata = ImageData(img,"pic1")
+    filename = "/home/jason/Desktop/Programs/lph4_lph7_max_match_image_n1_shd1_shp-1-1.png"
+    img = cv2.imread(filename,0)
+    imgdata = ImageData(img,"lph4_lph7_max_match_image_n1_shd1_shp-1-1",0,filename)
+    fn.prepareImage(imgdata,(140,140))
     ss = ShadeShape(imgdata)
     isl = ss.getIslandWithPoint((43,37))
-    src = np.zeros((140,140,3),np.uint8)
-    for pt in isl.coordinates().values():
-        src[pt] = (0,255,0)
-    fn.imgshow(img)
-    fn.imgshow(isl.image())
-    fn.imgshow(src)
-    #ss.showInteractiveIslands()
+    ss.showInteractiveIslands()

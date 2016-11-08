@@ -2,28 +2,32 @@ from ImageData.pixeldata import PixelData
 import numpy as np
 import csv
 import cv2
+import functions as fn
 
 class ImageData:
     file_path = ""
+    folder_path = ""
     pixelVec = []
     dataVec = []
     hslVec = []
     imgSize = []
-    prevImgSize = [0,0]
+    prevImgSize = (0,0)
     imgRows = 0
     imgCols = 0
     matImage = []
     imgName = ""
     imgArea = 0
     
-    def __init__(self,img,name="",option=0):
-        self.extract(img, name, option)
+    def __init__(self,img,name="",option=0, filename=""):
+        self.extract(img, name, option, filename)
         
-    def extract(self,img,name="",option=0):
+    def extract(self,img,name="",option=0, filename=""):
         self.imgName = name
+        self.folderPath = fn.getFolderPath(filename)
+        self.file_path = filename
         self.matImage = np.copy(img)
-        self.imgSize = [img.shape[0],img.shape[1]]
-        self.prevImgSize = [img.shape[0],img.shape[1]]
+        self.imgSize = (img.shape[1],img.shape[0])
+        self.prevImgSize = (img.shape[1],img.shape[0])
         self.imgRows = img.shape[0]
         self.imgCols = img.shape[1]
         self.imgArea = cv2.countNonZero(img)
@@ -54,10 +58,15 @@ class ImageData:
     def path(self):
         return self.file_path
     
+    def getfolderPath(self):
+        return self.folderPath
+    
     def size(self):
         return self.imgSize
     
-    def prevSize(self):
+    def prevSize(self, shape=None):
+        if shape!=None:
+            self.prevImgSize = (shape[1], shape[0])
         return self.prevImgSize
     
     def rows(self):
@@ -87,16 +96,13 @@ class ImageData:
     def writePrevSize(self,filename):
         if(filename==""): filename = self.imgName
         filename += "_prev_size.csv"
-        csv_file = open(filename,"w")
-        csv_file.write("%d,%d\n"%(self.prevImgSize[0],self.prevImgSize[1]))
-        csv_file.flush()
-        csv_file.close()
+        with open(filename, "w") as f:
+            f.write("{},{}\n".format(self.prevImgSize[0], self.prevImgSize[1]))
         
     def readPrevSize(self):
-        filename = self.imgName+"_prev_size.csv"
-        csv_file = open(filename)
-        csv_read = csv.reader(csv_file)
-        for row in range(csv_read):
-            self.prevImgSize[0] = row[0]
-            self.prevImgSize[1] = row[1]
-        
+        prevSizeFile = self.folderPath + self.name() + "_prev_size.csv"
+        with open(prevSizeFile,"r") as csv_file:
+            csv_read = csv.reader(csv_file)
+            for row in csv_read:
+                self.prevImgSize = (row[0], row[1])
+            

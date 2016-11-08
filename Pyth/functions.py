@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import math
+import os
+import traceback
 
 def imgshow(src, flag=0, name=""):
     '''
@@ -136,6 +138,62 @@ def countPositive(input):
         if(input[i]>0):
             count+=1
     return count
+
+#//! gets the whole path of the directory the file is in
+def getFolderPath(filename):
+    path = os.path.dirname(filename)
+    if path != "":
+        path += "/"
+    return path
+
+def prepareImage(imgdata, size):
+    input = imgdata.image()
+    _size = (input.shape[1], input.shape[0])
+    if(size[0]>0 and size[1]>0):
+        _size = size
+    crop_img = cropImage(input)
+    # get multiplier base on the biggest side
+    maxSize = max(crop_img.shape[1],crop_img.shape[0])
+    multiplier = float(size[1]) / maxSize
+
+    # assign new size using multiplier
+    newRows = min(math.ceil(crop_img.shape[0] * multiplier),size[1])
+    newCols = min(math.ceil(crop_img.shape[1] * multiplier),size[0])
+    _size = (int(newCols), int(newRows))
+    try:
+        img = scaleDownImage(crop_img, _size)
+    except Exception:
+        traceback.print_exc()
+        print("TestML::prepareImage(), runResizeImage() error!")
+        print("Crop_img size: {}".format(crop_img.shape))
+        print("Size: {}".format(_size))
+        print("Max Size: {}".format(maxSize))
+        print("Multiplier: {}".format(multiplier))
+        exit(1)
+
+    #centers the feature
+    newImg = np.zeros((size[1],size[0]), img.dtype)
+    centerSize = (int(math.floor(size[0]/2)), int(math.floor(size[1]/2)))
+    center = (int(math.floor(img.shape[1]/2)), int(math.floor(img.shape[0]/2)))
+    startPt = (centerSize[1]-center[1], centerSize[0]-center[0])
+    try:
+        newImg[startPt[0]:startPt[0]+img.shape[0], startPt[1]:startPt[1]+img.shape[1]] = img
+    except Exception:
+        traceback.print_exc()
+        print("Orig Img Size: {}".format(crop_img.shape))
+        print("Max Size: {}".format(maxSize))
+        print("Multiplier: {}".format(multiplier))
+        print("New Size: {}".format(_size))
+        print("Img Size: {}".format(img.shape))
+        print("New Img Size: {}".format(newImg.shape))
+        print("CenterSize: {}".format(centerSize))
+        print("Center: {}".format(center))
+        print("StartPt: {}".format(startPt))
+        exit(1)
+    imgdata.extract(newImg,imgdata.name(),0,imgdata.getfolderPath())
+    imgdata.prevSize(crop_img.shape)
+    imgdata.readPrevSize()
+
 
 if __name__ == "__main__":
     #print func.getFileName("/home/jason/Desktop/Programs/Crop_Features/acne1.png")

@@ -5,7 +5,7 @@ import math
 #//! finds the knee of the curve
 #//! returns knee point and sorted vector
 def kneeCurvePoint(vec):
-    vec = np.sort(vec)
+    vec = np.sort(vec).tolist()
 
     vecFromFirst = np.zeros((len(vec),2))
     firstPt = [0.0,0.0]
@@ -57,8 +57,8 @@ def kneeCurvePoint(vec):
     for i in range(len(distMat)):
         dist = distMat[i]
         if(dist>maxDist):
-            maxDist = dist;
-            bestIdx = i;
+            maxDist = dist
+            bestIdx = i
     return bestIdx, vec
 
 def removeOutliers(vec, percent):

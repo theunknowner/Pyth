@@ -47,11 +47,11 @@ class SubIslands:
     
     #get coordinates of non-zero pixels
     def getIslandPoints(self, islandImg):
-        nonZeroCoord = cv2.findNonZero(islandImg)
+        nonZeroCoord = cv2.findNonZero(islandImg) #this function returns points in ndarray form [x,y]
         # gets the center of mass and stores all the coords in a map
         for i in range(0,nonZeroCoord.size):
-            x = nonZeroCoord[i][0][1]
-            y = nonZeroCoord[i][0][0];
+            x = nonZeroCoord[i][0][0]
+            y = nonZeroCoord[i][0][1];
             coords = str(y)+","+ str(x)
             if not self.coordMap.has_key(coords):
                 self.coordMap[coords] = (y,x)

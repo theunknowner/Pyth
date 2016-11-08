@@ -43,7 +43,7 @@ class Features:
                     islandVec2 = []
                     littleIslands2 = self.disconnectIslands(island.image())
                     for j in range(len(littleIslands2)):
-                        island2 = Islands(littleIslands2.at(j))
+                        island2 = Islands(littleIslands2[j])
                         if(island2.shape_name().find("Fused-Donuts")>=0 and island2.shape_name().find("Comp-Donut")>=0):
                             crop_img2 = fn.cropImage(island2.image())
                             relArea = float(island2.area())/island.area()
@@ -108,7 +108,7 @@ class Features:
         #> prev size of image before resizing to 140x140
         prevSize = self.parentId.prevSize()
         #> magnification factor == (140 x 140) / (L x W)
-        m = featureImg.size / (float(prevSize[1]) * prevSize[0])
+        m = featureImg.size / (int(prevSize[1]) * int(prevSize[0]))
         for key in ptsVec:
             shadeShape = np.zeros(featureImg.shape, np.uint8)
             if(len(ptsVec[key])>0):

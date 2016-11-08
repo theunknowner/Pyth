@@ -45,7 +45,5 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-ptsVec = [[]] * 256
-for i in range(0,1000):
-    ptsVec[255].append(i)
-    
+s = fn.getFolderPath("lph4_lph7_max_match_image_n1_shd1_shp-1-1.png")
+print type(s)
