@@ -4,7 +4,7 @@ import pkg_resources
 class Shapes:
     __shapeNames__ = []
     __shapeNames2__ = []
-    __SHAPES_IMPORTED = False
+    __SHAPES_IMPORTED__ = False
     
     def __init__(self):
         if not Shapes.__SHAPES_IMPORTED__:

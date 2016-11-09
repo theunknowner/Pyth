@@ -8,19 +8,15 @@ from Shapes.shapemorph import ShapeMorph
 from NeuralNetwork.ann import ANN
 
 class Features:
-    parentId = None #ImageData parentID
-
-    islandVec = []
-    shadeVec = []
-    featureImg = [[]]
-    featArea = 0
-    numOfIsls = 0
-    featShape = 0
-    featShapeName = ""
-    NN_Results = []
-    NN_Score = 0.0
     
     def __init__(self,featureImg,parentId,disconnectIslands=True):
+        self.islandVec = []
+        self.shadeVec = []
+        self.featShape = 0
+        self.featShapeName = ""
+        self.NN_Results = []
+        self.NN_Score = 0.0
+        
         self.parentId = parentId
         self.featureImg = featureImg
         self.featArea = cv2.countNonZero(featureImg)
@@ -30,7 +26,6 @@ class Features:
             island = Islands(littleIslands[i])
             crop_img = fn.cropImage(island.image())
             frameArea = crop_img.size
-            
             if(frameArea<=50):
                 shapes = Shapes()
                 island.shape_name("Unknown")
@@ -108,7 +103,7 @@ class Features:
         #> prev size of image before resizing to 140x140
         prevSize = self.parentId.prevSize()
         #> magnification factor == (140 x 140) / (L x W)
-        m = featureImg.size / (int(prevSize[1]) * int(prevSize[0]))
+        m = featureImg.size / (float(prevSize[1]) * float(prevSize[0]))
         for key in ptsVec:
             shadeShape = np.zeros(featureImg.shape, np.uint8)
             if(len(ptsVec[key])>0):

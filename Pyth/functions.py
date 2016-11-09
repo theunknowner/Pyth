@@ -83,11 +83,11 @@ def scaleDownImage(src, size):
     #! 8bit uchar image only
     '''
     scaledDownImage = np.zeros((size[1],size[0]),np.uint8)
-    for x in range(0,size[1]):
-        for y in range(0,size[0]):
-            yd = int(math.ceil(float(y*src.shape[1])/size[0]))
-            xd = int(math.ceil(float(x*src.shape[0])/size[1]))
-            scaledDownImage[x,y] = src[xd,yd]
+    for y in range(0,size[1]):
+        for x in range(0,size[0]):
+            xd = int(math.floor((x*src.shape[1])/size[0]))
+            yd = int(math.floor((y*src.shape[0])/size[1]))
+            scaledDownImage[y,x] = src[yd,xd]
 
     return scaledDownImage;
 

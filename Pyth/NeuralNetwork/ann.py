@@ -105,21 +105,18 @@ class ANN:
         #crops and fixes binary sample data
         '''
         # size = [width,height] = (cols,rows)
-        _size = [sample.shape[1],sample.shape[0]]
+        _size = (sample.shape[1],sample.shape[0])
         if(size[0]>0 and size[1]>0):
             _size = size;
         #sample = this->convertToBinary(sample,0,255,0,1);
         crop_img = fn.cropImage(sample)
-    
         # get multiplier base on the biggest side
         maxSize = max(crop_img.shape[1],crop_img.shape[0])
         multiplier = float(size[1]) / maxSize
-    
         # assign new size using multiplier
         newRows = int(min(math.ceil(crop_img.shape[0] * multiplier),size[1]))
         newCols = int(min(math.ceil(crop_img.shape[1] * multiplier),size[0]))
-        _size = [newCols,newRows]
-        img = None
+        _size = (newCols,newRows)
         try:
             #img = runResizeImage(crop_img,_size);
             img = fn.scaleDownImage(crop_img, _size);
@@ -130,7 +127,6 @@ class ANN:
             print("Size: {}".format(_size))
             print("Max Size: {}".format(maxSize))
             print("Multiplier: {}".format(multiplier))
-            fn.imgshow(crop_img)
             exit(1)
             
         img[img > 0] = 255

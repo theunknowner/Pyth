@@ -5,64 +5,46 @@ from Shapes.shapemorph import ShapeMorph
 from NeuralNetwork.ann import ANN
 import functions as fn
 
-def onMouseCheckSubIslands(event, x, y, flags, param):
-    island = param
-    img = island.image().copy()
-    if not hasattr(onMouseCheckSubIslands, "ml"):
-        ml = ANN()
-    if  ( event == cv2.EVENT_LBUTTONDOWN ):
-        subIsland = island.getSubIslandWithPoint((y,x))
-        if not subIsland.isEmpty():
-            lum = img[y,x]
-            area = subIsland.area()
-            nnResult = max(subIsland.nn_results())
-            img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-            for value in subIsland.coordinates().values():
-                x = value[1]
-                y = value[0]
-                img[y,x] = (0,255,0)
-            shade_shape = subIsland.shape_name()
-            text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {}".format(x,y,lum,area,shade_shape,nnResult)
-            cv2.displayStatusBar(island.name(),text)
-            nnResults = subIsland.nn_results()
-            textScore = "[{:.5f}, {:.5f}, {:.5f}, {:.5f}, {:.5f}, {:.5f}]".format(nnResults[0,0],nnResults[0,1],nnResults[0,2],nnResults[0,3],nnResults[0,4],nnResults[0,5])
-            cv2.namedWindow("SubIsland", cv2.WINDOW_NORMAL)
-            cv2.imshow("SubIsland",subIsland.image())
-            cv2.namedWindow("SubIsland_NN", cv2.WINDOW_NORMAL)
-            cv2.displayStatusBar("SubIsland_NN",textScore)
-            cv2.imshow("SubIsland_NN",subIsland.nn_image())
-    if(event == cv2.EVENT_LBUTTONUP):
-        img = island.image().copy()
-    cv2.imshow(island.name(),img)
-
 class Islands:
-    islArea = 0
-    islShadeLevel = 0
-    islShape = 0
-    islSubShape = 0
-    islShapeName = ""
-    islandImg = [[]]
-    nn_prepared_img =[[]]
-    NN_Results = []
-    NN_Score = 0.0
-    islPt = [0,0]
-    _centerOfMass = [0,0]
-    coordMap = {}
-    _labelName = ""
-    is_shape_shifted = False
-    prev_shape = 0
     
-    subIslandVec = []
-    islName = ""
-    NN_Results2 = []
-    NN_Score_2 = 0.0
-    arc_length = 0
+    def __init__(self,islandImg):
+        self.islArea = 0
+        self.islShadeLevel = 0
+        self.islShape = 0
+        self.islSubShape = 0
+        self.islShapeName = ""
+        self.islandImg = [[]]
+        self.nn_prepared_img =[[]]
+        self.NN_Results = []
+        self.NN_Score = 0.0
+        self.islPt = [0,0]
+        self._centerOfMass = [0,0]
+        self.coordMap = {}
+        self._labelName = ""
+        self.is_shape_shifted = False
+        self.prev_shape = 0
+        
+        self.subIslandVec = []
+        self.islName = ""
+        self.NN_Results2 = []
+        self.NN_Score_2 = 0.0
+        self.arc_length = 0
     
+        self.islSubShape = -1
+        self.islArea = cv2.countNonZero(islandImg)
+        self.islShadeLevel = islandImg.max()
+        self.islandImg = islandImg;
+        self.determineIslandShape(islandImg);
+        self.getIslandPoints(islandImg);
+        self._labelName = "";
+        self.is_shape_shifted = False;
+        self.prev_shape = -1;
+        
     def determineIslandShape(self, islandImg):
         ml = ANN()
         sampleVec = []
         sample = islandImg.copy()
-        sample *= 255
+        sample[sample > 0] = 255
         sample = ml.prepareImage(sample,ml.getSize())
         sampleVec.append(sample)
     
@@ -103,7 +85,7 @@ class Islands:
             coords = str(y)+","+str(x)
             if(self.coordMap.has_key(coords)==False):
                 self.coordMap[coords] = (y,x)
-            
+                
             xCenter += x
             yCenter += y
             
@@ -121,17 +103,6 @@ class Islands:
 
     def storeSubIslands(self, subIsland):
         self.subIslandVec.append(subIsland)
-        
-    def __init__(self,islandImg):
-        self.islSubShape = -1
-        self.islArea = cv2.countNonZero(islandImg)
-        self.islShadeLevel = islandImg.max()
-        self.islandImg = islandImg;
-        self.determineIslandShape(islandImg);
-        self.getIslandPoints(islandImg);
-        self._labelName = "";
-        self.is_shape_shifted = False;
-        self.prev_shape = -1;
         
     def name(self):
         return self.islName
@@ -231,10 +202,40 @@ class Islands:
             if(sub_island.containsCoordinate(pt)):
                 return self.subIsland(i)
         return None
+    
+    def onMouseCheckSubIslands(self, event, x, y, flags, param):
+        island = param
+        img = island.image().copy()
+        if not hasattr(self.onMouseCheckSubIslands, "ml"):
+            ml = ANN()
+        if  ( event == cv2.EVENT_LBUTTONDOWN ):
+            subIsland = island.getSubIslandWithPoint((y,x))
+            if not subIsland.isEmpty():
+                lum = img[y,x]
+                area = subIsland.area()
+                nnResult = max(subIsland.nn_results())
+                img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+                for value in subIsland.coordinates().values():
+                    x = value[1]
+                    y = value[0]
+                    img[y,x] = (0,255,0)
+                shade_shape = subIsland.shape_name()
+                text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {}".format(x,y,lum,area,shade_shape,nnResult)
+                cv2.displayStatusBar(island.name(),text)
+                nnResults = subIsland.nn_results()
+                textScore = "[{:.5f}, {:.5f}, {:.5f}, {:.5f}, {:.5f}, {:.5f}]".format(nnResults[0,0],nnResults[0,1],nnResults[0,2],nnResults[0,3],nnResults[0,4],nnResults[0,5])
+                cv2.namedWindow("SubIsland", cv2.WINDOW_NORMAL)
+                cv2.imshow("SubIsland",subIsland.image())
+                cv2.namedWindow("SubIsland_NN", cv2.WINDOW_NORMAL)
+                cv2.displayStatusBar("SubIsland_NN",textScore)
+                cv2.imshow("SubIsland_NN",subIsland.nn_image())
+        if(event == cv2.EVENT_LBUTTONUP):
+            img = island.image().copy()
+        cv2.imshow(island.name(),img)
 
     def showInteractiveSubIslands(self):
         cv2.namedWindow(self.islName, cv2.WINDOW_NORMAL)
-        cv2.setMouseCallback(self.islName,onMouseCheckSubIslands, self)
+        cv2.setMouseCallback(self.islName,self.onMouseCheckSubIslands, self)
         cv2.imshow(self.islName,self.islandImg)
         cv2.waitKey(0)
 

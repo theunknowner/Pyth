@@ -5,14 +5,20 @@ from NeuralNetwork.ann import ANN
 
 
 class SubIslands:
-    islArea = 0
-    islShape = None
-    islShapeName = ""
-    islandImg = [[]]
-    nn_prepared_img = [[]]
-    NN_Results = []
-    NN_Score = 0.0
-    coordMap = {}
+    
+    #//! class is used to store the black discs subfeatures inside a feature
+    def __init__(self, subIslandImg):
+        self.islShape = None
+        self.islShapeName = ""
+        self.nn_prepared_img = [[]]
+        self.NN_Results = []
+        self.NN_Score = 0.0
+        self.coordMap = {}
+        
+        self.islArea = cv2.countNonZero(subIslandImg)
+        self.islandImg = subIslandImg
+        self.determineIslandShape(subIslandImg)
+        self.getIslandPoints(subIslandImg)
     
     #/************** PRIVATE FUNCTIONS ******************/
     def determineIslandShape(self, subIslandImg):
@@ -57,13 +63,6 @@ class SubIslands:
                 self.coordMap[coords] = (y,x)
     
     #/************** PUBLIC FUNCTIONS *******************/
-    
-    #//! class is used to store the black discs subfeatures inside a feature
-    def __init__(self, subIslandImg):
-        self.islArea = cv2.countNonZero(subIslandImg)
-        self.islandImg = subIslandImg
-        self.determineIslandShape(subIslandImg)
-        self.getIslandPoints(subIslandImg)
     
     def area(self) :
         return self.islArea

@@ -18,19 +18,22 @@ from NeuralNetwork.ann import ANN
 from Shapes.shapemorph import ShapeMorph
 
 class ShadeShape:
-    ss_name = ""
-    featureVec = []
-    shadeVec = []
-    areaVec = []
-    numOfFeats = 0
-    ssArea = 0
-    ssAreaPostDensityConnector = 0
-    img = None
-    imgdata = None
-    
     winName = ""
     winName2 = "Extracted"
     winName3 = "40x40"
+    
+    def __init__(self, imgdata, disconnectIslands=False, debugSym=0):
+        self.ss_name = ""
+        self.featureVec = []
+        self.shadeVec = []
+        self.areaVec = []
+        self.numOfFeats = 0
+        self.ssArea = 0
+        self.ssAreaPostDensityConnector = 0
+        self.img = None
+        self.imgdata = None
+        
+        self.extract(imgdata, disconnectIslands,debugSym)
     
     def onMouseCheckIslands(self, event, x, y, flags, param):
         #ss = param
@@ -46,9 +49,9 @@ class ShadeShape:
                 nnResult = max(island.nn_results()[0])
                 img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
                 for value in island.coordinates().values():
-                    x = value[1]
-                    y = value[0]
-                    img[y,x] = (0,255,0)
+                    col = value[1]
+                    row = value[0]
+                    img[row,col] = (0,255,0)
                 shade_shape = island.shape_name() + "_s" + str(shadeNum)
                 text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {}".format(x,y,lum,area,shade_shape,nnResult)
                 cv2.displayStatusBar(self.winName,text)
@@ -86,11 +89,11 @@ class ShadeShape:
                     img[y,x] = (0,255,0)
                 shade_shape = island.shape_name() + "_s" + str(shadeNum)
                 text = "({},{}) | Lum: {} | Area: {} | ShadeShape: {} | NN: {} | {}".format(x,y,lum,area,shade_shape,nnResult,ss.area())
-                cv2.displayStatusBar(winName,text)
+                cv2.displayStatusBar(self.winName,text)
                 islandExist = True
         if(event == cv2.EVENT_LBUTTONUP):
             img = ss.image().copy()
-        cv2.imshow(winName,img)
+        cv2.imshow(self.winName,img)
         if(islandExist):
             island.showInteractiveSubIslands()
 
@@ -178,7 +181,8 @@ class ShadeShape:
         for i in range(beginRow,endRow+1):
             for j in range(beginCol,endCol):
                 total += kernel[i-beginRow,j-beginCol]
-                if(src[i,j]>0): sum+= kernel[i-beginRow,j-beginCol]
+                if(src[i,j]>0):
+                    sum+= kernel[i-beginRow,j-beginCol]
         if(sum<=0.75*total):
             return True
     
@@ -229,9 +233,6 @@ class ShadeShape:
     
     #/******************** PUBLIC FUNCTIONS *********************/
     
-    def __init__(self, imgdata, disconnectIslands=False, debugSym=0):
-        self.extract(imgdata, disconnectIslands,debugSym)
-        
     #//! extracts the features from the image
     def extract(self, imgdata, disconnectIslands=False, debugSym=0):
         self.imgdata = imgdata
@@ -351,10 +352,10 @@ class ShadeShape:
         
 if __name__ == "__main__":
     from ImageData.imagedata import ImageData
-    filename = "/home/jason/Desktop/Programs/lph4_lph7_max_match_image_n1_shd1_shp-1-1.png"
+    filename = "/home/jason/Desktop/workspace/Test_Runs/Nov_3_2016/lph4/lph4_lph4_max_match_image_n0_shd0_shp-1-1.png"
     img = cv2.imread(filename,0)
-    imgdata = ImageData(img,"lph4_lph7_max_match_image_n1_shd1_shp-1-1",0,filename)
+    imgdata = ImageData(img,"lph4_lph4_max_match_image_n0_shd0_shp-1-1",0,filename)
     fn.prepareImage(imgdata,(140,140))
     ss = ShadeShape(imgdata)
-    isl = ss.getIslandWithPoint((43,37))
+    #isl = ss.getIslandWithPoint((23,50))
     ss.showInteractiveIslands()
