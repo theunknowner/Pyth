@@ -2,6 +2,7 @@ import traceback
 
 import statsign
 import functions as fn
+from Shapes.shapes import Shapes
 
 class Labels:
     #/************************* PRIVATE FUNCTIONS ****************************/
@@ -120,163 +121,85 @@ class Labels:
         return -1
     
     def getShape(self, label):
-        for i in range(0, len())
-        for(unsigned int i=0; i<ShapeMatch::shapeNames.size(); i++) {
-            if(label.find(this->getShapeName(i))!=string::npos) {
-                return this->getShapeName(i);
-            }
-        }
-        return "";
-    }
+        for i in range(0, len(Shapes.__shapeNames__)):
+            if(label.find(self.getShapeName(i))>=0):
+                return self.getShapeName(i)
+        return ""
     
-    int Labels::getShade(String label) {
-        if(this->labelShadeLumMap.find(label)!=this->labelShadeLumMap.end()) {
-            return this->labelShadeLumMap.at(label);
-        }
-        return -1;
-    }
+    def getShade(self, label):
+        if(self.labelShadeLumMap.has_key(label)):
+            return self.labelShadeLumMap[label]
+        return -1
     
-    int Labels::getShadeLevel(String label) {
-        if(this->labelShadeLevelMap.find(label)!=this->labelShadeLevelMap.end()) {
-            return this->labelShadeLevelMap.at(label);
-        }
+    def getShadeLevel(self, label):
+        if(self.labelShadeLevelMap.has_key(label)):
+            return self.labelShadeLevelMap[label]
+        return -1
     
-        return -1;
-    }
-    
-    void Labels::setShadeLevel(String label, int level) {
-        this->labelShadeLevelMap[label] = level;
-    }
+    def setShadeLevel(self, label, level):
+        self.labelShadeLevelMap[label] = level
     
     
-    bool Labels::isShapeShifted(String label) {
-        if(this->labelShapeShiftMap.find(label)!=this->labelShapeShiftMap.end()) {
-            return this->labelShapeShiftMap.at(label);
-        }
+    def isShapeShifted(self, label):
+        if(self.labelShapeShiftMap.has_key(label)):
+            return self.labelShapeShiftMap[label]
+        return False
     
-        return false;
-    }
+    def getShapeNum(self, label):
+        if(self.labelShapeNumMap.has_key(label)):
+            return self.labelShapeNumMap[label]
+        return -1
     
-    int Labels::getShapeNum(String label) {
-        if(this->labelShapeNumMap.find(label)!=this->labelShapeNumMap.end()) {
-            return this->labelShapeNumMap.at(label);
-        }
+    def getPrevShapeNum(self, label):
+        if(self.labelPrevShapeNumMap.has_key(label)):
+            return self.labelPrevShapeNumMap[label]
+        return -1
     
-        return -1;
-    }
+    #//! returns the statistical signature of each label/urn/feature.
+    #//! The total number of balls is stored in statSign[0].
+    def getStatSign(self, label):
+        if(self.labelStatSignMap.has_key(label)):
+            return self.labelStatSignMap[label]
+        return None
     
-    int Labels::getPrevShapeNum(String label) {
-        if(this->labelPrevShapeNumMap.find(label)!=this->labelPrevShapeNumMap.end()) {
-            return this->labelPrevShapeNumMap.at(label);
-        }
+    def getStatSignMap(self):
+        return self.labelStatSignMap
     
-        return -1;
-    }
+    def getIsland(self, label):
+        return self.labelIslandMap[label]
     
-    //! returns the statistical signature of each label/urn/feature.
-    //! The total number of balls is stored in statSign[0].
-    vector<float> Labels::getStatSign(String label) {
-        if(this->labelStatSignMap.find(label)!=this->labelStatSignMap.end()) {
-            return this->labelStatSignMap.at(label);
-        }
-        vector<float> vec(StatSign::getUrnSize(),0);
-        return vec;
-    }
+    def hasIsland(self, label):
+        if(self.labelIslandMap.has_key(label)):
+            return True
+        return False
     
-    map<String,vector<float>>& Labels::getStatSignMap() {
-        return this->labelStatSignMap;
-    }
+    def printCompareLabels(self, labels1, labels2, score=-1.0, markShifted=0):
+        labelMap1 = labels1.getMap()
+        labelMap2 = labels2.getMap()
+        i=0
+        for (key1,v1), (key2,v2) in zip(labelMap1.items(), labelMap2.items()):
+            isShifted = labels1.isShapeShifted(key1)
+            if(markShifted==0 or not isShifted):
+                print("{}) {}: {}({:.6f}) | {}: {}({:.6f})".format(i,key1,v1[0],v1[1],key2,v2[0],v2[1]))
+            else:
+                print("{}) *{}: {}({:.6f}) | {}: {}({:.6f})".format(i,key1,v1[0],v1[1],key2,v2[0],v2[1]))
+            i+=1
+        if(score>=0):
+            print("Results: {}".format(score))
     
+    def writeCompareLabels(self, name, labels1, labels2, score=-1.0, markShifted=0):
+        filename = name+".txt"
+        with open(filename, "w") as f:
+            labelMap1 = labels1.getMap()
+            labelMap2 = labels2.getMap()
+            i=0
+            for (key1,v1), (key2,v2) in zip(labelMap1.items(), labelMap2.items()):
+                isShifted = labels1.isShapeShifted(key1)
+                if(markShifted==0 or not isShifted):
+                    f.write("{}) {}: {}({:.6f}) | {}: {}({:.6f})".format(i,key1,v1[0],v1[1],key2,v2[0],v2[1]))
+                else:
+                    prevShape = labels1.getPrevShapeNum(key1)
+                    f.write("{}) {}->{}: {}({:.6f}) | {}: {}({:.6f})".format(i,prevShape,key1,v1[0],v1[1],key2,v2[0],v2[1]))
+            if(score>=0):
+                f.write("Results: {}".formate(score))
     
-    Islands& Labels::getIsland(String label) {
-        return this->labelIslandMap.at(label);
-    }
-    
-    bool Labels::hasIsland(String label) {
-        if(this->labelIslandMap.find(label) != this->labelIslandMap.end())
-            return true;
-    
-        return false;
-    }
-    
-    void Labels::printCompareLabels(Labels &labels1, Labels &labels2, float score, int markShifted) {
-        auto labelMap1 = labels1.getMap();
-        auto labelMap2 = labels2.getMap();
-        for(auto it1=labelMap1.begin(), it2=labelMap2.begin(); it1!=labelMap1.end(), it2!=labelMap2.end(); it1++, it2++) {
-            int i = distance(labelMap1.begin(),it1);
-            bool isShifted = labels1.isShapeShifted(it1->first);
-            if(markShifted==0 || !isShifted)
-                printf("%d) %s: %d(%f) | %s: %d(%f)\n",i,it1->first.c_str(),it1->second.first,it1->second.second,it2->first.c_str(),it2->second.first,it2->second.second);
-            else
-                printf("%d) *%s: %d(%f) | %s: %d(%f)\n",i,it1->first.c_str(),it1->second.first,it1->second.second,it2->first.c_str(),it2->second.first,it2->second.second);
-        }
-        if(score>=0) {
-            printf("Results: %f\n",score);
-        }
-    }
-    
-    void Labels::writeCompareLabels(String name, Labels &labels1, Labels &labels2, float score, int markShifted) {
-        String file = name+".txt";
-        FILE * fp;
-        fp = fopen(file.c_str(),"w");
-        auto labelMap1 = labels1.getMap();
-        auto labelMap2 = labels2.getMap();
-        for(auto it1=labelMap1.begin(), it2=labelMap2.begin(); it1!=labelMap1.end(), it2!=labelMap2.end(); it1++, it2++) {
-            int i = distance(labelMap1.begin(),it1);
-            bool isShifted = labels1.isShapeShifted(it1->first);
-            if(markShifted==0 || !isShifted)
-                fprintf(fp,"%d) %s: %d(%f) | %s: %d(%f)\n",i,it1->first.c_str(),it1->second.first,it1->second.second,it2->first.c_str(),it2->second.first,it2->second.second);
-            else {
-                int prevShape = labels1.getPrevShapeNum(it1->first);
-                fprintf(fp,"%d) %d->%s: %d(%f) | %s: %d(%f)\n",i,prevShape,it1->first.c_str(),it1->second.first,it1->second.second,it2->first.c_str(),it2->second.first,it2->second.second);
-            }
-        }
-        if(score>=0) {
-            fprintf(fp,"Results: %f\n",score);
-        }
-        fclose(fp);
-    }
-    
-    void Labels::printCompareStatSign(Labels &labels1, Labels &labels2, String label) {
-        vector<float> statSignVec1 = labels1.getStatSign(label);
-        vector<float> statSignVec2 = labels2.getStatSign(label);
-        assert(statSignVec1.size()>0 && statSignVec2.size()>0);
-        assert(statSignVec1.size()==statSignVec2.size());
-        for(unsigned int i=1; i<statSignVec1.size(); i++) {
-            float porp1 = (float)statSignVec1.at(i) / statSignVec1.at(0);
-            float porp2 = (float)statSignVec2.at(i) / statSignVec2.at(0);
-            try {
-                printf("L%d: %0.2f(%f) | L%d: %0.2f(%f)\n",i,statSignVec1.at(i),porp1,i,statSignVec2.at(i),porp2);
-            } catch(const std::out_of_range &oor) {
-                printf("statSignVec1.size(): %lu\n",statSignVec1.size());
-                printf("statSignVec2.size(): %lu\n",statSignVec2.size());
-                printf("i: %d\n",i);
-                exit(1);
-            }
-        }
-        printf("Total: %0.2f | Total: %0.2f\n",statSignVec1.at(0), statSignVec2.at(0));
-    }
-    
-    void Labels::writeCompareStatSign(Labels &labels1, Labels &labels2, String label, String fileType) {
-        vector<float> statSignVec1 = labels1.getStatSign(label);
-        vector<float> statSignVec2 = labels2.getStatSign(label);
-        assert(statSignVec1.size()>0 && statSignVec2.size()>0);
-        assert(statSignVec1.size()==statSignVec2.size());
-        String file = labels1.name() + "_" + labels2.name() + "_" + label + "_stat_sign_compare." + fileType;
-        FILE * fp;
-        fp = fopen(file.c_str(),"w");
-        for(unsigned int i=1; i<statSignVec1.size(); i++) {
-            float porp1 = (float)statSignVec1.at(i) / statSignVec1.at(0);
-            float porp2 = (float)statSignVec2.at(i) / statSignVec2.at(0);
-            if(fileType=="txt") {
-                fprintf(fp,"L%d: %d(%f) | L%d: %d(%f)\n",i,statSignVec1.at(i),porp1,i,statSignVec2.at(i),porp2);
-            } else if(fileType=="csv") {
-                fprintf(fp,"L%d,%0.2f,%f,L%d,%0.2f,%f\n",i,statSignVec1.at(i),porp1,i,statSignVec2.at(i),porp2);
-            }
-        }
-        if(fileType=="txt") {
-            fprintf(fp,"Total: %0.2f | Total: %0.2f\n",statSignVec1.at(0), statSignVec2.at(0));
-        } else if(fileType=="csv") {
-            fprintf(fp,"Total,%0.2f,Total,%0.2f\n",statSignVec1.at(0), statSignVec2.at(0));
-        }
-    }

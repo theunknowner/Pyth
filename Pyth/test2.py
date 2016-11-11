@@ -8,5 +8,7 @@ cv2.imshow('image',img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()'''
 
-def foo():
-    print "Hello World"
+import test
+
+test.foo()
+print test.__SHADES__

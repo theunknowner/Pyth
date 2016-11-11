@@ -114,7 +114,9 @@ class Islands:
     def shade(self):
         return self.islShadeLevel
     
-    def image(self):
+    def image(self, image=None):
+        if image!=None:
+            self.islandImg = image
         return self.islandImg
     
     def nn_image(self):

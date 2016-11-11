@@ -45,10 +45,5 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-def foo(vec):
-    new_vec = vec[:]
-    new_vec[0][0].append(9)
-    vec = new_vec
-vec = [[[1,2,3],[2,3,4]],[[4,5,6],[7,8,9]]]
-foo(vec)
+vec = [ [ [0] * 0] * 2 ] * 2  
 print vec

@@ -276,7 +276,9 @@ class ShadeShape:
     def areaPostDensityConnector(self):
         return self.ssAreaPostDensityConnector
     
-    def image(self):
+    def image(self, image=None):
+        if image!=None:
+            self.img = image
         return self.img
     
     def name(self):
@@ -304,11 +306,10 @@ class ShadeShape:
         for i in range(0, island.image().shape[0]):
             for j in range(0, island.image().shape[1]):
                 coords = str(i) + "," + str(j)
-                if(island.coordinates().has_key(coords) and island.image()[i,j]>0):
-                    self.img[i,j] = newShade
+                if(island.image()[i,j]>0):
                     island.image()[i,j] = newShade
-                else:
-                    island.image()[i,j] = 0
+                    if(island.coordinates().has_key(coords)):
+                        self.img[i,j] = newShade
     
     def getImageData(self):
         return self.imgdata
@@ -358,4 +359,4 @@ if __name__ == "__main__":
     fn.prepareImage(imgdata,(140,140))
     ss = ShadeShape(imgdata)
     #isl = ss.getIslandWithPoint((23,50))
-    ss.showInteractiveIslands()
+    #ss.showInteractiveIslands()

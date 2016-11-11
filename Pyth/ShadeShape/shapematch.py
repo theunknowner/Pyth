@@ -1,5 +1,6 @@
 import csv
 import pkg_resources
+import traceback
 
 from Shapes.shapes import Shapes
 from Algorithms.jaysort import jaysort
@@ -13,6 +14,11 @@ class ShapeMatch():
     __shapeWeightsVec__ = []
     __shapeWeightsVec2__ = []
     
+    SHIFT_NONE=0
+    SHIFT_LEFT=1
+    SHIFT_RIGHT=2
+    _SHIFT = ["SHIFT_NONE","SHIFT_START"]
+
     #/******************* PUBLIC FUNCTIONS ******************/
     
     def __init__(self):
@@ -107,113 +113,48 @@ class ShapeMatch():
                 if(areaVec[max_shade_pos]>0):
                     islandVec[shapeNum][max_shade_pos][0].isShapeShifted(True)
                     newIslandVec[new_shape][max_shade_pos].append(islandVec[shapeNum][max_shade_pos][0])
-                    newIslandVec.at(new_shape).at(max_shade_pos).back().prevShape() = shapeNum;
-                    newIslandVec.at(new_shape).at(max_shade_pos).back().shape() = new_shape;
-                    newIslandVec.at(shapeNum).at(max_shade_pos).erase(newIslandVec.at(shapeNum).at(max_shade_pos).begin());
-                    areaVec.at(max_shade_pos) = 0;
-                }
-            }
-            islandVec = newIslandVec;
-            return true;
-        }
-        return false;
-    }
+                    newIslandVec[new_shape][max_shade_pos][-1].prevShape(shapeNum)
+                    newIslandVec[new_shape][max_shade_pos][-1].shape(new_shape)
+                    del newIslandVec[shapeNum][max_shade_pos][0]
+                    areaVec[max_shade_pos] = 0
+            islandVec = newIslandVec
+            return True
+        return False
     
-    void ShapeMatch::showIslands(vector<vector<vector<Islands> > > &islandVec) {
-        for(unsigned int i=0; i<islandVec.size(); i++) {
-            for(unsigned int j=0; j<islandVec.at(i).size(); j++) {
-                for(unsigned int k=0; k<islandVec.at(i).at(j).size(); k++) {
-                    Mat img = islandVec.at(i).at(j).at(k).image();
-                    printf("Shade %d: ",i);
-                    cout << islandVec.at(i).at(j).at(k).shape_name() << endl;
-                    //imgshow(this->upIslandVec.at(i).at(j).image(),1);
-                }
-            }
-        }
-    }
+    def numOfShapes(self):
+        return len(Shapes.__shapeNames__)
     
-    void ShapeMatch::printIslandAreas(vector<vector<vector<Islands> > > &islandVec) {
-        cout << "**** PRINT ISLANDVEC AREAS ****" << endl;
-        for(unsigned int i=0; i<islandVec.size(); i++) {
-            printf("shape%d:\n",i);
-            for(unsigned int j=0; j<islandVec.at(i).size(); j++) {
-                printf("s%d: ",j);
-                for(unsigned int k=0; k<islandVec.at(i).at(j).size(); k++) {
-                    int area = islandVec.at(i).at(j).at(k).area();
-                    printf("%d,",area);
-                }
-                cout << endl;
-            }
-        }
-    }
+    #//! assigns an island a new shape
+    #//! does not re-sort by area
+    def moveShape(self, islandVec, shapeNum, shadeNum, islNum, newShape):
+        islandVec[newShape][shadeNum].append(islandVec[shapeNum][shadeNum][islNum])
+        del islandVec[shapeNum][shadeNum][islNum]
     
-    int ShapeMatch::numOfShapes() {
-        return ShapeMatch::shapeNames.size();
-    }
+    def SHIFT(self):
+        return self._SHIFT
     
-    //! assigns an island a new shape
-    //! does not re-sort by area
-    void ShapeMatch::moveShape(vector<vector<vector<Islands> > > &islandVec, int shapeNum, int shadeNum, int islNum, int newShape) {
-        islandVec.at(newShape).at(shadeNum).push_back(islandVec.at(shapeNum).at(shadeNum).at(islNum));
-        islandVec.at(shapeNum).at(shadeNum).erase(islandVec.at(shapeNum).at(shadeNum).begin()+islNum);
-    }
+    def applyShiftPenalty(self, score, shapeNum, shapeNum2):
+        penalty = ShapeMatch.__shiftingPenalties__[shapeNum][shapeNum2]
+        newScore = score * pow(2.0,penalty)
+        return newScore
     
-    vector<String> ShapeMatch::SHIFT() {
-        return this->_SHIFT;
-    }
+    def getShiftPenalty(self, shapeNum, shapeNum2):
+        try:
+            weight = ShapeMatch.__shiftingPenalties__[shapeNum][shapeNum2]
+            penalty = pow(2.0,weight)
+            return penalty
+        except Exception:
+            traceback.print_exc()
+            print("ShapeNum: {}".format(shapeNum))
+            print("ShapeNum2: {}".format(shapeNum2))
+            print("ShiftPenalty[{}].size(): {}".format(shapeNum,len(ShapeMatch.__shiftingPenalties__[shapeNum])))
+            exit(1)
     
-    void ShapeMatch::printRules() {
-        for(unsigned int i=0; i<ShapeMatch::shiftingRules.size(); i++) {
-            printf("%s: ",ShapeMatch::shapeNames.at(i).c_str());
-            for(unsigned int j=0; j<ShapeMatch::shiftingRules.at(i).size(); j++) {
-                printf("%s, ",ShapeMatch::shiftingRules.at(i).at(j).c_str());
-            }
-            printf("\n");
-        }
-    }
-    
-    void ShapeMatch::printPenalties() {
-        for(unsigned int i=0; i<ShapeMatch::shiftingPenalties.size(); i++) {
-            for(unsigned int j=0; j<ShapeMatch::shiftingPenalties.at(i).size(); j++) {
-                printf("%0.2f, ",ShapeMatch::shiftingPenalties.at(i).at(j));
-            }
-            printf("\n");
-        }
-    }
-    
-    void ShapeMatch::printWeights() {
-        for(unsigned int i=0; i<ShapeMatch::shapeWeightsVec.size(); i++) {
-            printf("%s: %f\n",ShapeMatch::shapeNames.at(i).c_str(),ShapeMatch::shapeWeightsVec.at(i));
-        }
-    }
-    
-    float ShapeMatch::applyShiftPenalty(float score, int shapeNum, int shapeNum2) {
-        float penalty = ShapeMatch::shiftingPenalties.at(shapeNum).at(shapeNum2);
-        float newScore = score * pow(2.0,penalty);
-        return newScore;
-    }
-    
-    float ShapeMatch::getShiftPenalty(int shapeNum, int shapeNum2) {
-        try {
-            float weight = ShapeMatch::shiftingPenalties.at(shapeNum).at(shapeNum2);
-            float penalty = pow(2.0,weight);
-            return penalty;
-        } catch (const std::out_of_range &oor) {
-            printf("ShapeMatch::getShiftPenalty() out of range!\n");
-            printf("ShapeNum: %d\n",shapeNum);
-            printf("ShapeNum2: %d\n",shapeNum2);
-            printf("ShiftPenalty[%d].size(): %lu\n",shapeNum,ShapeMatch::shiftingPenalties.at(shapeNum).size());
-            exit(1);
-        }
-    }
-    
-    float ShapeMatch::applyShapeWeight(int shapeNum) {
-        try {
-            return ShapeMatch::shapeWeightsVec.at(shapeNum);
-        } catch (const std::out_of_range &oor) {
-            printf("ShapeMatch::applyShapeWeight() out of range!\n");
-            printf("ShapeNum: %d\n", shapeNum);
-            printf("ShapeWeightVec.size(): %lu\n",ShapeMatch::shapeWeightsVec.size());
-            exit(1);
-        }
-    }
+    def applyShapeWeight(self, shapeNum):
+        try:
+            return ShapeMatch.__shapeWeightsVec__[shapeNum]
+        except Exception:
+            traceback.print_exc()
+            print("ShapeNum: {}".format(shapeNum))
+            print("ShapeWeightVec.size(): {}".format(len(ShapeMatch.__shapeWeightsVec__)))
+            exit(1)
