@@ -193,8 +193,18 @@ def prepareImage(imgdata, size):
     imgdata.extract(newImg,imgdata.name(),0,imgdata.getfolderPath())
     imgdata.prevSize(crop_img.shape)
     imgdata.readPrevSize()
+    
+#//! adds specified digit to front of num
+#//! default [length]=1 returns just the num
+def addDigitsForLabel(num, digit, length):
+    label = str(num)
+    length -= len(label)
+    for i in range(0,length):
+        label = digit+label;
+    return label
 
 
 if __name__ == "__main__":
     #print func.getFileName("/home/jason/Desktop/Programs/Crop_Features/acne1.png")
-    img = cv2.imread("/home/jason/Desktop/Programs/Crop_Features/acne1_discrete.png",0)
+    #img = cv2.imread("/home/jason/Desktop/Programs/Crop_Features/acne1_discrete.png",0)
+    print addDigitsForLabel(2, "0", 3)

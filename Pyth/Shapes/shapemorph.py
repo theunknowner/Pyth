@@ -15,12 +15,15 @@ import cv2
 import numpy as np
 import math
 import traceback
+import multiprocessing
+from multiprocessing import Pool
 
 from Kneecurve import kneecurve as kc
 from Algorithms import jaysort
 from hsl import Hsl
 from Pathfind.pathfind import Pathfind
 import functions as fn
+from utils import timing
 
 class ShapeMorph:
     debugMode = False
@@ -654,11 +657,10 @@ class ShapeMorph:
         C = 1.0
         alpha = 1.0
         beta = 0.0
-        row = col=0
         fnVec = []
         absDiscernThresh=5.0
-        while(row<src.shape[0]):
-            while(col<src.shape[1]):
+        for row in range(0, src.shape[0]):
+            for col in range(0, src.shape[1]):
                 density = countDk = avgDk=0.0
                 for i in range(row,row+size[1]):
                     for j in range(col,col+size[0]):
@@ -673,9 +675,6 @@ class ShapeMorph:
                 fx = C * pow(density,alpha) * pow(avgDk,beta)
                 if(fx>0):
                     fnVec.append(fx)
-                col+=1
-            col=0
-            row+=1
     
         #calculate knee of curve for fx for filtering
         fxThresh=0.0
@@ -800,6 +799,7 @@ class ShapeMorph:
     
     #//! returns map of image after noise removal
     #//! input is a 5x5 smoothed image using Func::smooth()
+    
     def removeNoiseOnBoundary2(self, src):
         hsl = Hsl()
         HSL = []

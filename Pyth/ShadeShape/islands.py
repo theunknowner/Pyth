@@ -175,16 +175,22 @@ class Islands:
     
         return False;
     
-    def labelName(self):
+    def labelName(self, label_name=None):
+        if label_name!=None:
+            self._labelName = label_name
         return self._labelName
     
     def isEmpty(self):
         return not self.islandImg.any()
     
-    def isShapeShifted(self):
+    def isShapeShifted(self, is_shifted=None):
+        if is_shifted!=None:
+            self.is_shape_shifted = is_shifted
         return self.is_shape_shifted
     
-    def prevShape(self):
+    def prevShape(self, prev_shape=None):
+        if prev_shape!=None:
+            self.prev_shape = prev_shape
         return self.prev_shape
     
     def arcLength(self):

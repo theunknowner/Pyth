@@ -1,6 +1,7 @@
 import numpy as np
 
-def jaysort(vec):
+#//! flag=0: ascending, flag=1: descending
+def jaysort(vec, flag=0):
     origPos = []
     vec2d = []
     for i in range(len(vec)):
@@ -11,6 +12,8 @@ def jaysort(vec):
         vec2d.append(tempVec)
     
     vec2d.sort()
+    if(flag==1):
+        vec2d.reverse()
     sortedVec = []
     for i in range(len(vec2d)):
         sortedVec.append(vec2d[i][0])
