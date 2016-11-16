@@ -1,4 +1,5 @@
 import traceback
+import copy
 
 import statsign
 import functions as fn
@@ -62,10 +63,14 @@ class Labels:
     def getMap(self):
         return self.labelMap
     
-    def getShadeLevelMap(self):
+    def getShadeLevelMap(self, shadeLevelMap=None):
+        if shadeLevelMap!=None:
+            self.labelShadeLevelMap = shadeLevelMap
         return self.labelShadeLevelMap
     
-    def getShapeMap(self):
+    def getShapeMap(self, shapeMap=None):
+        if shapeMap!=None:
+            self.labelShapeNumMap = shapeMap
         return self.labelShapeNumMap
     
     def setLabels(self, labels):
@@ -106,6 +111,9 @@ class Labels:
             if(i==num):
                 return key
         return ""
+    
+    def copy(self):
+        return copy.copy(self)
     
     def name(self):
         return self.labelName

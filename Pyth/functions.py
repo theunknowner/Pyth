@@ -203,6 +203,18 @@ def addDigitsForLabel(num, digit, length):
         label = digit+label;
     return label
 
+def createVectorList(shape, val):
+    """
+    shape = tuple of N-dims
+    val = value to be populated
+    """
+    count = len(shape) - 2
+    vec = [val for i in range(shape[-1])]
+    while(count>=0):
+        vec = [[vec] for i in range(shape[count])]
+        count -= 1
+    return vec
+
 
 if __name__ == "__main__":
     #print func.getFileName("/home/jason/Desktop/Programs/Crop_Features/acne1.png")

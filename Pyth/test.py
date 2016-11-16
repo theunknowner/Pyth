@@ -45,5 +45,3 @@ color3 = "Pink"
 print color.containsAllColor(color1,color2,color3)
 '''
 
-vec = [ [ [0] * 0] * 2 ] * 2  
-print vec

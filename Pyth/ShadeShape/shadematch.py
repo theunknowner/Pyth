@@ -147,7 +147,7 @@ def shiftShades(islandVec, shiftType):
     if(shiftType==SHIFT_NONE):
         return islandVec
     
-    newIslandVec = [[[]] * maxNumOfShades] * len(islandVec)
+    newIslandVec = [[[] for i in range(maxNumOfShades)] for i in range(len(islandVec))]
 
     for shape in range(0, len(islandVec)):
         for shade in range(0, len(islandVec[shape])):

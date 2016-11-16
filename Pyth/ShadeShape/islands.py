@@ -66,7 +66,7 @@ class Islands:
                 else:
                     shapeName = "Incomp-" + shapeName
             else:
-                if(results[0,0]>0.0):
+                if(results[0,0]>=0.20):
                     shapeName = "Fused-Donuts"
         labelNum = ml.getShapeIndex(shapeName)
         self.NN_Score = max_elem
